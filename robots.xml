@@ -1,13 +1,45 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE nta PUBLIC '-//Uppaal Team//DTD Flat System 1.1//EN' 'http://www.it.uu.se/research/group/darts/uppaal/flat-1_2.dtd'>
 <nta>
-	<declaration>// Place global declarations here.</declaration>
+	<declaration>/*
+    entities: 
+        BOT -&gt; can either move or lift (must have "lifting" flag) and it can perform all the task-related actions
+        GRID (integer matrix), 
+        POD,
+        HUMA ONLY ONE HUMAN IN THE SYSTEM. s/he can only pick_up the pod
+        TASK -&gt; claim, pod_fetch, pod_deliver, human_pick_up, robot_return 
+        QUEUE -&gt; composed of tasks queue (FIFO list) and list of available bots (to be chosen randomly)
+*/</declaration>
 	<template>
-		<name x="5" y="5">Template</name>
+		<name x="5" y="5">POD</name>
 		<declaration>// Place local declarations here.</declaration>
 		<location id="id0" x="0" y="0">
 		</location>
 		<init ref="id0"/>
+	</template>
+	<template>
+		<name>BOT</name>
+		<location id="id1" x="0" y="0">
+		</location>
+		<init ref="id1"/>
+	</template>
+	<template>
+		<name>QUEUE</name>
+		<location id="id2" x="0" y="0">
+		</location>
+		<init ref="id2"/>
+	</template>
+	<template>
+		<name>TASK</name>
+		<location id="id3" x="0" y="0">
+		</location>
+		<init ref="id3"/>
+	</template>
+	<template>
+		<name>HUMAN</name>
+		<location id="id4" x="0" y="0">
+		</location>
+		<init ref="id4"/>
 	</template>
 	<system>// Place template instantiations here.
 Process = Template();
