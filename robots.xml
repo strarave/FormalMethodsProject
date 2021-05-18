@@ -9,6 +9,7 @@
         HUMA ONLY ONE HUMAN IN THE SYSTEM. s/he can only pick_up the pod
         TASK -&gt; claim, pod_fetch, pod_deliver, human_pick_up, robot_return 
         QUEUE -&gt; composed of tasks queue (FIFO list) and list of available bots (to be chosen randomly)
+<<<<<<< HEAD
     
     Synchronize tokens:
         BOT - TASK : claim!, end!
