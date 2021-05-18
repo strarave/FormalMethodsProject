@@ -9,7 +9,22 @@
         HUMA ONLY ONE HUMAN IN THE SYSTEM. s/he can only pick_up the pod
         TASK -&gt; claim, pod_fetch, pod_deliver, human_pick_up, robot_return 
         QUEUE -&gt; composed of tasks queue (FIFO list) and list of available bots (to be chosen randomly)
-*/</declaration>
+    
+    Synchronize tokens:
+        BOT - TASK : claim!, end!
+        BOT - POD : lift!, pose!
+        BOT - HUMAN : pick_up?, release?
+
+
+    miscellanueous notes:
+        delivery point and entry point are known a priori
+        it's the task that chooses the robot, not vice versa.
+        the robot associated to a task is chosen among the available ones
+        
+
+*/
+
+</declaration>
 	<template>
 		<name x="5" y="5">POD</name>
 		<declaration>// Place local declarations here.</declaration>
@@ -41,11 +56,7 @@
 		</location>
 		<init ref="id4"/>
 	</template>
-	<system>// Place template instantiations here.
-Process = Template();
-// List one or more processes to be composed into a system.
-system Process;
-    </system>
+	<system>system POD;</system>
 	<queries>
 		<query>
 			<formula></formula>
