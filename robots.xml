@@ -18,8 +18,6 @@
 
     miscellanueous notes:
         delivery point and entry point are known a priori
-        it's the task that chooses the robot, not vice versa.
-        the robot associated to a task is chosen among the available ones
         
 
 */
@@ -86,20 +84,90 @@ void gridInitialization () {
 	</template>
 	<template>
 		<name>TASK</name>
+		<parameter>int T</parameter>
 		<declaration>/*
     This template should be used to define the evolution of a single task
-    When the a new task is added</declaration>
-		<location id="id4" x="0" y="0">
+    When the a new task is added the template choses the corresponding pod randomly among the available ones
+    First implementation: a new task arrives every T seconds (constant value)
+    Future implementation: T is a sample of a normal distribution
+*/
+
+clock timer;
+int avPods[n*m][2]; /*The amatrix is oversized because it considers there could be a pod for every spot of the grid. Consider adding a parameter for the total number of pods */
+int avPods_quantity = 0; /*Number of available pods*/
+int chosenPod[2];
+
+void init_avPods () {
+    int i;
+    for (i = 0; i &lt; n*m; i++) {
+        avPods[i][0] = -1;
+        avPods[i][1] = -1;
+    }
+}
+
+void checkAv () { /*Function to check which pods are available*/
+    int i,j;
+    avPods_quantity = 0;
+    for (i = 0; i &lt; n; i++) {
+        for (j = 0; j &lt; m; j++) {
+            if (grid[i][j] == 2) {
+                avPods[avPods_quantity][0] = i;
+                avPods[avPods_quantity][1] = j;
+                avPods_quantity ++;
+            }
+        }
+    }
+}
+
+void choosePod(int i) {
+    int chosen =  i % avPods_quantity;
+    chosenPod = avPods[chosen];
+}</declaration>
+		<location id="id4" x="-178" y="-42">
+			<name x="-153" y="-59">idle</name>
+			<label kind="invariant" x="-153" y="-42">timer &lt;= T</label>
 		</location>
-		<init ref="id4"/>
+		<location id="id5" x="102" y="-42">
+			<name x="127" y="-51">addingTask</name>
+			<committed/>
+		</location>
+		<location id="id6" x="-408" y="-42">
+			<name x="-418" y="-76">startingTask</name>
+			<committed/>
+		</location>
+		<init ref="id6"/>
+		<transition>
+			<source ref="id6"/>
+			<target ref="id4"/>
+			<label kind="assignment" x="-382" y="-42">timer = 0, init_avPods()</label>
+		</transition>
+		<transition>
+			<source ref="id5"/>
+			<target ref="id4"/>
+			<label kind="select" x="-127" y="-170">i : int[0, 1000]</label>
+			<label kind="assignment" x="-127" y="-153">choosePod(i), init_avPods(),
+timer = 0</label>
+			<nail x="102" y="-110"/>
+			<nail x="-178" y="-110"/>
+		</transition>
+		<transition>
+			<source ref="id4"/>
+			<target ref="id5"/>
+			<label kind="guard" x="-85" y="0">timer &gt;= T</label>
+			<label kind="assignment" x="-85" y="25">checkAv()</label>
+			<nail x="-178" y="25"/>
+			<nail x="102" y="25"/>
+		</transition>
 	</template>
 	<template>
 		<name>HUMAN</name>
-		<location id="id5" x="0" y="0">
+		<location id="id7" x="0" y="0">
 		</location>
-		<init ref="id5"/>
+		<init ref="id7"/>
 	</template>
-	<system>system POD;</system>
+	<system>t = TASK(10);
+p = POD();
+system p, t;</system>
 	<queries>
 		<query>
 			<formula></formula>
