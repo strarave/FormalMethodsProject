@@ -11,7 +11,8 @@
         QUEUE -&gt; composed of tasks queue (FIFO list) and list of available bots (to be chosen randomly)
     
     Synchronize tokens:
-        BOT - TASK : claim!, end!
+        BOT - QUEUE : avaiableTask?, claim!, end!
+        TASK - QUEUE : newTask!
         BOT - POD : lift!, pose!
         BOT - HUMAN : pick_up?, release?
 
@@ -21,6 +22,10 @@
         
 
 */
+
+// Channels
+
+
 
 // Modelling the grid:
 /* 
@@ -39,6 +44,7 @@ const int entryPoint[2] = {9, 9};
 const int deliveryPoint[2] = {0, 9};
 int[0,5] grid[n][m];
 
+
 //First scheme of the grid
 
 void gridInitialization () {
@@ -52,7 +58,21 @@ void gridInitialization () {
         }    
     }
 
-}</declaration>
+}
+
+// Bots
+const int nBot = 10;
+typedef int[0, nBot - 1] bot_t;
+chan claim[bot_t];
+chan tmp_taskbot[2];
+
+// Queue
+const int maxT = 10;
+
+// Comunication Task - Queue
+const int Ttask = 10;
+chan newTask;
+meta int tmp_taskpod[2];</declaration>
 	<template>
 		<name x="5" y="5">POD</name>
 		<declaration>// Place local declarations here.
@@ -78,9 +98,104 @@ void gridInitialization () {
 	</template>
 	<template>
 		<name>QUEUE</name>
-		<location id="id3" x="0" y="0">
+		<parameter>int maxT</parameter>
+		<declaration>/*
+    When a new task is available, the template TASK send a newTask! and the queue collect the new task
+    When a bot is idle, it sends a claim! to get the next task in the queue
+    If a the queue receives a newTask and it is already full, it reaches a deadlock state
+*/
+
+int nTasks = 0;
+int queueList[maxT][2];
+
+
+void initQueue(){
+    int j;
+    for (j = 0; j&lt;maxT; j++){queue[j][0] = -1;}
+}
+
+void append(int k[2]) {
+    int j;
+    bool done = false;
+    for (j = 0; j&lt;maxT; j++) {
+        if (queue[j][0] == -1 &amp;&amp; !done){
+            queue[j] = k;
+            done = true;
+        }
+    }
+}
+
+void pop() {
+    int j;
+    for (j = 0; j&lt;maxT; j++) {
+        if (j &lt; maxT - 1) {queueList[j] = queueList[j+1];}
+        else {queueList[j][0] = -1; queueList[j][1] = -1;}
+    }
+}</declaration>
+		<location id="id3" x="-365" y="-8">
+			<name x="-375" y="-42">start</name>
+			<committed/>
+		</location>
+		<location id="id4" x="-110" y="-8">
+			<name x="-204" y="0">emptyQueue</name>
+		</location>
+		<location id="id5" x="136" y="-8">
+			<name x="34" y="-17">taskAvailable</name>
+		</location>
+		<location id="id6" x="425" y="-8">
+			<name x="415" y="-42">LostAPacket</name>
 		</location>
 		<init ref="id3"/>
+		<transition>
+			<source ref="id5"/>
+			<target ref="id5"/>
+			<label kind="select" x="153" y="-204">i : int[0, nBot-1]</label>
+			<label kind="guard" x="153" y="-187">nTask &gt; 1</label>
+			<label kind="synchronisation" x="153" y="-170">claim[i]?</label>
+			<label kind="assignment" x="153" y="-153">tmp_taskbot = queueList[0]
+pop() ,nTask--</label>
+			<nail x="161" y="-110"/>
+			<nail x="221" y="-110"/>
+		</transition>
+		<transition>
+			<source ref="id5"/>
+			<target ref="id6"/>
+			<label kind="guard" x="255" y="8">task &gt;= maxT</label>
+			<label kind="synchronisation" x="255" y="-8">newTask?</label>
+		</transition>
+		<transition>
+			<source ref="id5"/>
+			<target ref="id4"/>
+			<label kind="select" x="-85" y="-187">i: int[0, nBot-1]</label>
+			<label kind="guard" x="-85" y="-170">nTask == 1</label>
+			<label kind="synchronisation" x="-85" y="-153">claim[i]?</label>
+			<label kind="assignment" x="-85" y="-136">tmp_taskbot = queueList[0]
+pop() ,nTask--</label>
+			<nail x="136" y="-93"/>
+			<nail x="-110" y="-93"/>
+		</transition>
+		<transition>
+			<source ref="id5"/>
+			<target ref="id5"/>
+			<label kind="guard" x="153" y="127">task &lt; maxT</label>
+			<label kind="synchronisation" x="153" y="93">newTask?</label>
+			<label kind="assignment" x="153" y="110">append(tmp), nTask++</label>
+			<nail x="153" y="93"/>
+			<nail x="221" y="93"/>
+		</transition>
+		<transition>
+			<source ref="id4"/>
+			<target ref="id5"/>
+			<label kind="synchronisation" x="-102" y="68">newTask?</label>
+			<label kind="assignment" x="-102" y="85">append(tmp), nTask++</label>
+			<nail x="-110" y="68"/>
+			<nail x="136" y="68"/>
+		</transition>
+		<transition>
+			<source ref="id3"/>
+			<target ref="id4"/>
+			<label kind="assignment" x="-306" y="-8">initQueue()</label>
+		</transition>
 	</template>
 	<template>
 		<name>TASK</name>
@@ -90,6 +205,8 @@ void gridInitialization () {
     When the a new task is added the template choses the corresponding pod randomly among the available ones
     First implementation: a new task arrives every T seconds (constant value)
     Future implementation: T is a sample of a normal distribution
+
+    IMPORTANT: What to do if no pod is available?
 */
 
 clock timer;
@@ -123,36 +240,46 @@ void choosePod(int i) {
     int chosen =  i % avPods_quantity;
     chosenPod = avPods[chosen];
 }</declaration>
-		<location id="id4" x="-178" y="-42">
+		<location id="id7" x="-178" y="-42">
 			<name x="-153" y="-59">idle</name>
 			<label kind="invariant" x="-153" y="-42">timer &lt;= T</label>
 		</location>
-		<location id="id5" x="102" y="-42">
-			<name x="127" y="-51">addingTask</name>
+		<location id="id8" x="102" y="-42">
+			<name x="127" y="-51">creatingTask</name>
 			<committed/>
 		</location>
-		<location id="id6" x="-408" y="-42">
+		<location id="id9" x="-408" y="-42">
 			<name x="-418" y="-76">startingTask</name>
 			<committed/>
 		</location>
-		<init ref="id6"/>
+		<location id="id10" x="-42" y="-110">
+			<name x="-52" y="-144">addingTask</name>
+			<committed/>
+		</location>
+		<init ref="id9"/>
 		<transition>
-			<source ref="id6"/>
-			<target ref="id4"/>
-			<label kind="assignment" x="-382" y="-42">timer = 0, init_avPods()</label>
-		</transition>
-		<transition>
-			<source ref="id5"/>
-			<target ref="id4"/>
-			<label kind="select" x="-127" y="-170">i : int[0, 1000]</label>
-			<label kind="assignment" x="-127" y="-153">choosePod(i), init_avPods(),
-timer = 0</label>
-			<nail x="102" y="-110"/>
+			<source ref="id10"/>
+			<target ref="id7"/>
+			<label kind="synchronisation" x="-187" y="-170">newTask!</label>
+			<label kind="assignment" x="-229" y="-153">init_avPods(), timer = 0,
+tmp_taskpod = chosenPod</label>
 			<nail x="-178" y="-110"/>
 		</transition>
 		<transition>
-			<source ref="id4"/>
-			<target ref="id5"/>
+			<source ref="id9"/>
+			<target ref="id7"/>
+			<label kind="assignment" x="-382" y="-42">timer = 0, init_avPods()</label>
+		</transition>
+		<transition>
+			<source ref="id8"/>
+			<target ref="id10"/>
+			<label kind="select" x="51" y="-153">i : int[0, 1000]</label>
+			<label kind="assignment" x="51" y="-136">choosePod(i)</label>
+			<nail x="102" y="-110"/>
+		</transition>
+		<transition>
+			<source ref="id7"/>
+			<target ref="id8"/>
 			<label kind="guard" x="-85" y="0">timer &gt;= T</label>
 			<label kind="assignment" x="-85" y="25">checkAv()</label>
 			<nail x="-178" y="25"/>
@@ -161,13 +288,14 @@ timer = 0</label>
 	</template>
 	<template>
 		<name>HUMAN</name>
-		<location id="id7" x="0" y="0">
+		<location id="id11" x="0" y="0">
 		</location>
-		<init ref="id7"/>
+		<init ref="id11"/>
 	</template>
-	<system>t = TASK(10);
+	<system>q = QUEUE(maxT);
+t = TASK(TTask);
 p = POD();
-system p, t;</system>
+system p, t, q;</system>
 	<queries>
 		<query>
 			<formula></formula>
