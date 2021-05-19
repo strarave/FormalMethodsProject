@@ -64,13 +64,13 @@ void gridInitialization () {
 const int nBot = 10;
 typedef int[0, nBot - 1] bot_t;
 chan claim[bot_t];
-chan tmp_taskbot[2];
+meta int tmp_taskbot[2];
 
 // Queue
 const int maxT = 10;
 
 // Comunication Task - Queue
-const int Ttask = 10;
+const int TTask = 10;
 chan newTask;
 meta int tmp_taskpod[2];</declaration>
 	<template>
@@ -98,28 +98,27 @@ meta int tmp_taskpod[2];</declaration>
 	</template>
 	<template>
 		<name>QUEUE</name>
-		<parameter>int maxT</parameter>
 		<declaration>/*
     When a new task is available, the template TASK send a newTask! and the queue collect the new task
     When a bot is idle, it sends a claim! to get the next task in the queue
     If a the queue receives a newTask and it is already full, it reaches a deadlock state
 */
 
-int nTasks = 0;
+int nTask = 0;
 int queueList[maxT][2];
 
 
 void initQueue(){
     int j;
-    for (j = 0; j&lt;maxT; j++){queue[j][0] = -1;}
+    for (j = 0; j&lt;maxT; j++){queueList[j][0] = -1;}
 }
 
 void append(int k[2]) {
     int j;
     bool done = false;
     for (j = 0; j&lt;maxT; j++) {
-        if (queue[j][0] == -1 &amp;&amp; !done){
-            queue[j] = k;
+        if (queueList[j][0] == -1 &amp;&amp; !done){
+            queueList[j] = k;
             done = true;
         }
     }
@@ -145,6 +144,19 @@ void pop() {
 		<location id="id6" x="425" y="-8">
 			<name x="415" y="-42">LostAPacket</name>
 		</location>
+		<location id="id7" x="525" y="-8">
+			<name x="515" y="-42">start</name>
+			<committed/>
+		</location>
+		<location id="id8" x="780" y="-8">
+			<name x="686" y="0">emptyQueue</name>
+		</location>
+		<location id="id9" x="1026" y="-8">
+			<name x="924" y="-17">taskAvailable</name>
+		</location>
+		<location id="id10" x="1315" y="-8">
+			<name x="1305" y="-42">LostAPacket</name>
+		</location>
 		<init ref="id3"/>
 		<transition>
 			<source ref="id5"/>
@@ -152,7 +164,7 @@ void pop() {
 			<label kind="select" x="153" y="-204">i : int[0, nBot-1]</label>
 			<label kind="guard" x="153" y="-187">nTask &gt; 1</label>
 			<label kind="synchronisation" x="153" y="-170">claim[i]?</label>
-			<label kind="assignment" x="153" y="-153">tmp_taskbot = queueList[0]
+			<label kind="assignment" x="153" y="-153">tmp_taskbot = queueList[0],
 pop() ,nTask--</label>
 			<nail x="161" y="-110"/>
 			<nail x="221" y="-110"/>
@@ -160,7 +172,7 @@ pop() ,nTask--</label>
 		<transition>
 			<source ref="id5"/>
 			<target ref="id6"/>
-			<label kind="guard" x="255" y="8">task &gt;= maxT</label>
+			<label kind="guard" x="255" y="8">nTask &gt;= maxT</label>
 			<label kind="synchronisation" x="255" y="-8">newTask?</label>
 		</transition>
 		<transition>
@@ -169,7 +181,7 @@ pop() ,nTask--</label>
 			<label kind="select" x="-85" y="-187">i: int[0, nBot-1]</label>
 			<label kind="guard" x="-85" y="-170">nTask == 1</label>
 			<label kind="synchronisation" x="-85" y="-153">claim[i]?</label>
-			<label kind="assignment" x="-85" y="-136">tmp_taskbot = queueList[0]
+			<label kind="assignment" x="-85" y="-136">tmp_taskbot = queueList[0],
 pop() ,nTask--</label>
 			<nail x="136" y="-93"/>
 			<nail x="-110" y="-93"/>
@@ -177,9 +189,9 @@ pop() ,nTask--</label>
 		<transition>
 			<source ref="id5"/>
 			<target ref="id5"/>
-			<label kind="guard" x="153" y="127">task &lt; maxT</label>
+			<label kind="guard" x="153" y="127">nTask &lt; maxT</label>
 			<label kind="synchronisation" x="153" y="93">newTask?</label>
-			<label kind="assignment" x="153" y="110">append(tmp), nTask++</label>
+			<label kind="assignment" x="153" y="110">append(tmp_taskpod), nTask++</label>
 			<nail x="153" y="93"/>
 			<nail x="221" y="93"/>
 		</transition>
@@ -187,7 +199,7 @@ pop() ,nTask--</label>
 			<source ref="id4"/>
 			<target ref="id5"/>
 			<label kind="synchronisation" x="-102" y="68">newTask?</label>
-			<label kind="assignment" x="-102" y="85">append(tmp), nTask++</label>
+			<label kind="assignment" x="-102" y="85">append(tmp_taskpod), nTask++</label>
 			<nail x="-110" y="68"/>
 			<nail x="136" y="68"/>
 		</transition>
@@ -195,6 +207,56 @@ pop() ,nTask--</label>
 			<source ref="id3"/>
 			<target ref="id4"/>
 			<label kind="assignment" x="-306" y="-8">initQueue()</label>
+		</transition>
+		<transition>
+			<source ref="id9"/>
+			<target ref="id9"/>
+			<label kind="select" x="1043" y="-204">i : int[0, nBot-1]</label>
+			<label kind="guard" x="1043" y="-187">nTask &gt; 1</label>
+			<label kind="synchronisation" x="1043" y="-170">claim[i]?</label>
+			<label kind="assignment" x="1043" y="-153">tmp_taskbot = queueList[0],
+pop() ,nTask--</label>
+			<nail x="1051" y="-110"/>
+			<nail x="1111" y="-110"/>
+		</transition>
+		<transition>
+			<source ref="id9"/>
+			<target ref="id10"/>
+			<label kind="guard" x="1145" y="8">nTask &gt;= maxT</label>
+			<label kind="synchronisation" x="1145" y="-8">newTask?</label>
+		</transition>
+		<transition>
+			<source ref="id9"/>
+			<target ref="id8"/>
+			<label kind="select" x="805" y="-187">i: int[0, nBot-1]</label>
+			<label kind="guard" x="805" y="-170">nTask == 1</label>
+			<label kind="synchronisation" x="805" y="-153">claim[i]?</label>
+			<label kind="assignment" x="805" y="-136">tmp_taskbot = queueList[0],
+pop() ,nTask--</label>
+			<nail x="1026" y="-93"/>
+			<nail x="780" y="-93"/>
+		</transition>
+		<transition>
+			<source ref="id9"/>
+			<target ref="id9"/>
+			<label kind="guard" x="1043" y="127">nTask &lt; maxT</label>
+			<label kind="synchronisation" x="1043" y="93">newTask?</label>
+			<label kind="assignment" x="1043" y="110">append(tmp_taskpod), nTask++</label>
+			<nail x="1043" y="93"/>
+			<nail x="1111" y="93"/>
+		</transition>
+		<transition>
+			<source ref="id8"/>
+			<target ref="id9"/>
+			<label kind="synchronisation" x="788" y="68">newTask?</label>
+			<label kind="assignment" x="788" y="85">append(tmp_taskpod), nTask++</label>
+			<nail x="780" y="68"/>
+			<nail x="1026" y="68"/>
+		</transition>
+		<transition>
+			<source ref="id7"/>
+			<target ref="id8"/>
+			<label kind="assignment" x="584" y="-8">initQueue()</label>
 		</transition>
 	</template>
 	<template>
@@ -240,46 +302,46 @@ void choosePod(int i) {
     int chosen =  i % avPods_quantity;
     chosenPod = avPods[chosen];
 }</declaration>
-		<location id="id7" x="-178" y="-42">
+		<location id="id11" x="-178" y="-42">
 			<name x="-153" y="-59">idle</name>
 			<label kind="invariant" x="-153" y="-42">timer &lt;= T</label>
 		</location>
-		<location id="id8" x="102" y="-42">
+		<location id="id12" x="102" y="-42">
 			<name x="127" y="-51">creatingTask</name>
 			<committed/>
 		</location>
-		<location id="id9" x="-408" y="-42">
+		<location id="id13" x="-408" y="-42">
 			<name x="-418" y="-76">startingTask</name>
 			<committed/>
 		</location>
-		<location id="id10" x="-42" y="-110">
+		<location id="id14" x="-42" y="-110">
 			<name x="-52" y="-144">addingTask</name>
 			<committed/>
 		</location>
-		<init ref="id9"/>
+		<init ref="id13"/>
 		<transition>
-			<source ref="id10"/>
-			<target ref="id7"/>
+			<source ref="id14"/>
+			<target ref="id11"/>
 			<label kind="synchronisation" x="-187" y="-170">newTask!</label>
 			<label kind="assignment" x="-229" y="-153">init_avPods(), timer = 0,
 tmp_taskpod = chosenPod</label>
 			<nail x="-178" y="-110"/>
 		</transition>
 		<transition>
-			<source ref="id9"/>
-			<target ref="id7"/>
+			<source ref="id13"/>
+			<target ref="id11"/>
 			<label kind="assignment" x="-382" y="-42">timer = 0, init_avPods()</label>
 		</transition>
 		<transition>
-			<source ref="id8"/>
-			<target ref="id10"/>
+			<source ref="id12"/>
+			<target ref="id14"/>
 			<label kind="select" x="51" y="-153">i : int[0, 1000]</label>
 			<label kind="assignment" x="51" y="-136">choosePod(i)</label>
 			<nail x="102" y="-110"/>
 		</transition>
 		<transition>
-			<source ref="id7"/>
-			<target ref="id8"/>
+			<source ref="id11"/>
+			<target ref="id12"/>
 			<label kind="guard" x="-85" y="0">timer &gt;= T</label>
 			<label kind="assignment" x="-85" y="25">checkAv()</label>
 			<nail x="-178" y="25"/>
@@ -288,9 +350,9 @@ tmp_taskpod = chosenPod</label>
 	</template>
 	<template>
 		<name>HUMAN</name>
-		<location id="id11" x="0" y="0">
+		<location id="id15" x="0" y="0">
 		</location>
-		<init ref="id11"/>
+		<init ref="id15"/>
 	</template>
 	<system>q = QUEUE(maxT);
 t = TASK(TTask);
