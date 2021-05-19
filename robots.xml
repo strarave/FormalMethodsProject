@@ -24,37 +24,76 @@
 
 */
 
-</declaration>
+// Modelling the grid:
+/* 
+    The grid is n x m matrix of integers and has as elements a number in [0,2]
+    0: the spot is free
+    1: the spot is occupied by a bot (it does not matter if it has a pod or not)
+    2: the spot is occupied by a pod (so no bot under the pod)
+    3: the spot is the entry point
+    4: the spot is the delivery point
+*/
+
+const int n = 10;
+const int m = 10;
+const int entryPoint[2] = {9, 9};
+const int deliveryPoint[2] = {0, 9};
+int[0,4] grid[n][m];
+
+//First scheme of the grid
+
+void gridInitialization () {
+    int i,j;
+    for (i = 0; i &lt; n; i++){
+        for (j = 0; j &lt; m; j++) {
+            if (i == entryPoint[0] &amp;&amp; j == entryPoint[1]) {grid[i][j] = 3;}
+            else if (i == deliveryPoint[0] &amp;&amp; j == deliveryPoint[1]) {grid[i][j] = 4;}
+            else if (i % 2 == 0 &amp;&amp; j &lt; 6) {grid[i][j] = 2;}
+            else {grid[i][j] = 0;}
+        }    
+    }
+
+}</declaration>
 	<template>
 		<name x="5" y="5">POD</name>
-		<declaration>// Place local declarations here.</declaration>
+		<declaration>// Place local declarations here.
+
+/* The starting command is the initialization of the grid to define the postion of the pods */</declaration>
 		<location id="id0" x="0" y="0">
+			<committed/>
+		</location>
+		<location id="id1" x="-221" y="0">
 		</location>
 		<init ref="id0"/>
+		<transition>
+			<source ref="id0"/>
+			<target ref="id1"/>
+			<label kind="assignment" x="-161" y="8">gridInitialization()</label>
+		</transition>
 	</template>
 	<template>
 		<name>BOT</name>
-		<location id="id1" x="0" y="0">
-		</location>
-		<init ref="id1"/>
-	</template>
-	<template>
-		<name>QUEUE</name>
 		<location id="id2" x="0" y="0">
 		</location>
 		<init ref="id2"/>
 	</template>
 	<template>
-		<name>TASK</name>
+		<name>QUEUE</name>
 		<location id="id3" x="0" y="0">
 		</location>
 		<init ref="id3"/>
 	</template>
 	<template>
-		<name>HUMAN</name>
+		<name>TASK</name>
 		<location id="id4" x="0" y="0">
 		</location>
 		<init ref="id4"/>
+	</template>
+	<template>
+		<name>HUMAN</name>
+		<location id="id5" x="0" y="0">
+		</location>
+		<init ref="id5"/>
 	</template>
 	<system>system POD;</system>
 	<queries>
