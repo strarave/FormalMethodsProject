@@ -29,16 +29,17 @@
     The grid is n x m matrix of integers and has as elements a number in [0,2]
     0: the spot is free
     1: the spot is occupied by a bot (it does not matter if it has a pod or not)
-    2: the spot is occupied by a pod (so no bot under the pod)
-    3: the spot is the entry point
-    4: the spot is the delivery point
+    2: the spot is occupied by a pod and the pod is free (so no bot under the pod)
+    3: the spot is occupied by a pod and the pod is claimed by a task
+    4: the spot is the entry point
+    5: the spot is the delivery point
 */
 
 const int n = 10;
 const int m = 10;
 const int entryPoint[2] = {9, 9};
 const int deliveryPoint[2] = {0, 9};
-int[0,4] grid[n][m];
+int[0,5] grid[n][m];
 
 //First scheme of the grid
 
@@ -46,8 +47,8 @@ void gridInitialization () {
     int i,j;
     for (i = 0; i &lt; n; i++){
         for (j = 0; j &lt; m; j++) {
-            if (i == entryPoint[0] &amp;&amp; j == entryPoint[1]) {grid[i][j] = 3;}
-            else if (i == deliveryPoint[0] &amp;&amp; j == deliveryPoint[1]) {grid[i][j] = 4;}
+            if (i == entryPoint[0] &amp;&amp; j == entryPoint[1]) {grid[i][j] = 4;}
+            else if (i == deliveryPoint[0] &amp;&amp; j == deliveryPoint[1]) {grid[i][j] = 5;}
             else if (i % 2 == 0 &amp;&amp; j &lt; 6) {grid[i][j] = 2;}
             else {grid[i][j] = 0;}
         }    
@@ -85,6 +86,9 @@ void gridInitialization () {
 	</template>
 	<template>
 		<name>TASK</name>
+		<declaration>/*
+    This template should be used to define the evolution of a single task
+    When the a new task is added</declaration>
 		<location id="id4" x="0" y="0">
 		</location>
 		<init ref="id4"/>
