@@ -92,9 +92,49 @@ meta int tmp_taskpod[2];</declaration>
 	</template>
 	<template>
 		<name>BOT</name>
-		<location id="id2" x="0" y="0">
+		<location id="id2" x="-255" y="-255">
+			<name x="-265" y="-289">idle</name>
+		</location>
+		<location id="id3" x="119" y="17">
+			<name x="128" y="34">podReached</name>
+		</location>
+		<location id="id4" x="-255" y="17">
+			<name x="-323" y="34">podDelivering</name>
+		</location>
+		<location id="id5" x="119" y="-255">
+			<name x="109" y="-289">taskClaimed</name>
 		</location>
 		<init ref="id2"/>
+		<transition>
+			<source ref="id4"/>
+			<target ref="id2"/>
+		</transition>
+		<transition>
+			<source ref="id3"/>
+			<target ref="id4"/>
+		</transition>
+		<transition>
+			<source ref="id3"/>
+			<target ref="id3"/>
+			<nail x="119" y="153"/>
+			<nail x="306" y="153"/>
+			<nail x="306" y="17"/>
+		</transition>
+		<transition>
+			<source ref="id5"/>
+			<target ref="id3"/>
+		</transition>
+		<transition>
+			<source ref="id5"/>
+			<target ref="id5"/>
+			<nail x="119" y="-348"/>
+			<nail x="289" y="-348"/>
+			<nail x="289" y="-255"/>
+		</transition>
+		<transition>
+			<source ref="id2"/>
+			<target ref="id5"/>
+		</transition>
 	</template>
 	<template>
 		<name>QUEUE</name>
@@ -131,23 +171,23 @@ void pop() {
         else {queueList[j][0] = -1; queueList[j][1] = -1;}
     }
 }</declaration>
-		<location id="id3" x="-365" y="-8">
+		<location id="id6" x="-365" y="-8">
 			<name x="-375" y="-42">start</name>
 			<committed/>
 		</location>
-		<location id="id4" x="-110" y="-8">
+		<location id="id7" x="-110" y="-8">
 			<name x="-204" y="0">emptyQueue</name>
 		</location>
-		<location id="id5" x="136" y="-8">
+		<location id="id8" x="136" y="-8">
 			<name x="34" y="-17">taskAvailable</name>
 		</location>
-		<location id="id6" x="425" y="-8">
+		<location id="id9" x="425" y="-8">
 			<name x="415" y="-42">LostAPacket</name>
 		</location>
-		<init ref="id3"/>
+		<init ref="id6"/>
 		<transition>
-			<source ref="id5"/>
-			<target ref="id5"/>
+			<source ref="id8"/>
+			<target ref="id8"/>
 			<label kind="select" x="153" y="-204">i : int[0, nBot-1]</label>
 			<label kind="guard" x="153" y="-187">nTask &gt; 1</label>
 			<label kind="synchronisation" x="153" y="-170">claim[i]?</label>
@@ -157,14 +197,14 @@ pop() ,nTask--</label>
 			<nail x="221" y="-110"/>
 		</transition>
 		<transition>
-			<source ref="id5"/>
-			<target ref="id6"/>
+			<source ref="id8"/>
+			<target ref="id9"/>
 			<label kind="guard" x="255" y="8">nTask &gt;= maxT</label>
 			<label kind="synchronisation" x="255" y="-8">newTask?</label>
 		</transition>
 		<transition>
-			<source ref="id5"/>
-			<target ref="id4"/>
+			<source ref="id8"/>
+			<target ref="id7"/>
 			<label kind="select" x="-85" y="-187">i: int[0, nBot-1]</label>
 			<label kind="guard" x="-85" y="-170">nTask == 1</label>
 			<label kind="synchronisation" x="-85" y="-153">claim[i]?</label>
@@ -174,8 +214,8 @@ pop() ,nTask--</label>
 			<nail x="-110" y="-93"/>
 		</transition>
 		<transition>
-			<source ref="id5"/>
-			<target ref="id5"/>
+			<source ref="id8"/>
+			<target ref="id8"/>
 			<label kind="guard" x="153" y="127">nTask &lt; maxT</label>
 			<label kind="synchronisation" x="153" y="93">newTask?</label>
 			<label kind="assignment" x="153" y="110">append(tmp_taskpod), nTask++</label>
@@ -183,16 +223,16 @@ pop() ,nTask--</label>
 			<nail x="221" y="93"/>
 		</transition>
 		<transition>
-			<source ref="id4"/>
-			<target ref="id5"/>
+			<source ref="id7"/>
+			<target ref="id8"/>
 			<label kind="synchronisation" x="-102" y="68">newTask?</label>
 			<label kind="assignment" x="-102" y="85">append(tmp_taskpod), nTask++</label>
 			<nail x="-110" y="68"/>
 			<nail x="136" y="68"/>
 		</transition>
 		<transition>
-			<source ref="id3"/>
-			<target ref="id4"/>
+			<source ref="id6"/>
+			<target ref="id7"/>
 			<label kind="assignment" x="-306" y="-8">initQueue()</label>
 		</transition>
 	</template>
@@ -239,46 +279,46 @@ void choosePod(int i) {
     int chosen =  i % avPods_quantity;
     chosenPod = avPods[chosen];
 }</declaration>
-		<location id="id7" x="-178" y="-42">
+		<location id="id10" x="-178" y="-42">
 			<name x="-153" y="-59">idle</name>
 			<label kind="invariant" x="-153" y="-42">timer &lt;= T</label>
 		</location>
-		<location id="id8" x="102" y="-42">
+		<location id="id11" x="102" y="-42">
 			<name x="127" y="-51">creatingTask</name>
 			<committed/>
 		</location>
-		<location id="id9" x="-408" y="-42">
+		<location id="id12" x="-408" y="-42">
 			<name x="-418" y="-76">startingTask</name>
 			<committed/>
 		</location>
-		<location id="id10" x="-42" y="-110">
+		<location id="id13" x="-42" y="-110">
 			<name x="-52" y="-144">addingTask</name>
 			<committed/>
 		</location>
-		<init ref="id9"/>
+		<init ref="id12"/>
 		<transition>
-			<source ref="id10"/>
-			<target ref="id7"/>
+			<source ref="id13"/>
+			<target ref="id10"/>
 			<label kind="synchronisation" x="-187" y="-170">newTask!</label>
 			<label kind="assignment" x="-229" y="-153">init_avPods(), timer = 0,
 tmp_taskpod = chosenPod</label>
 			<nail x="-178" y="-110"/>
 		</transition>
 		<transition>
-			<source ref="id9"/>
-			<target ref="id7"/>
+			<source ref="id12"/>
+			<target ref="id10"/>
 			<label kind="assignment" x="-382" y="-42">timer = 0, init_avPods()</label>
 		</transition>
 		<transition>
-			<source ref="id8"/>
-			<target ref="id10"/>
+			<source ref="id11"/>
+			<target ref="id13"/>
 			<label kind="select" x="51" y="-153">i : int[0, 1000]</label>
 			<label kind="assignment" x="51" y="-136">choosePod(i)</label>
 			<nail x="102" y="-110"/>
 		</transition>
 		<transition>
-			<source ref="id7"/>
-			<target ref="id8"/>
+			<source ref="id10"/>
+			<target ref="id11"/>
 			<label kind="guard" x="-85" y="0">timer &gt;= T</label>
 			<label kind="assignment" x="-85" y="25">checkAv()</label>
 			<nail x="-178" y="25"/>
@@ -287,9 +327,9 @@ tmp_taskpod = chosenPod</label>
 	</template>
 	<template>
 		<name>HUMAN</name>
-		<location id="id11" x="0" y="0">
+		<location id="id14" x="0" y="0">
 		</location>
-		<init ref="id11"/>
+		<init ref="id14"/>
 	</template>
 	<system>q = QUEUE();
 t = TASK(TTask);
