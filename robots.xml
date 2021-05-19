@@ -280,7 +280,7 @@ void choosePod(int i) {
     int chosen =  i % avPods_quantity;
     chosenPod = avPods[chosen];
 }</declaration>
-		<location id="id7" x="-178" y="-42">
+		<location id="id10" x="-178" y="-42">
 			<name x="-153" y="-42">idle</name>
 			<label kind="invariant" x="-161" y="-25">timer &lt;= T</label>
 		</location>
@@ -292,25 +292,28 @@ void choosePod(int i) {
 			<name x="-418" y="-76">startingTask</name>
 			<committed/>
 		</location>
-
-		<location id="id10" x="-42" y="-110">
+		<location id="id13" x="-42" y="-110">
 			<name x="-51" y="-153">addingTask</name>
-
 			<committed/>
 		</location>
 		<init ref="id12"/>
 		<transition>
-			<source ref="id10"/>
-			<target ref="id7"/>
+			<source ref="id11"/>
+			<target ref="id13"/>
+			<label kind="assignment" x="34" y="-136">chosenPod = choosePod()</label>
+			<nail x="102" y="-110"/>
+		</transition>
+		<transition>
+			<source ref="id13"/>
+			<target ref="id10"/>
 			<label kind="guard" x="-102" y="-85">chosenPod[0] == -1</label>
 			<label kind="assignment" x="-127" y="-68">init_avPods(), timer = 0</label>
 		</transition>
 		<transition>
-			<source ref="id10"/>
-			<target ref="id7"/>
+			<source ref="id13"/>
+			<target ref="id10"/>
 			<label kind="guard" x="-212" y="-170">chosenPod[0] != -1</label>
 			<label kind="synchronisation" x="-187" y="-187">newTask!</label>
-
 			<label kind="assignment" x="-229" y="-153">init_avPods(), timer = 0,
 tmp_taskpod = chosenPod</label>
 			<nail x="-178" y="-110"/>
@@ -319,13 +322,6 @@ tmp_taskpod = chosenPod</label>
 			<source ref="id12"/>
 			<target ref="id10"/>
 			<label kind="assignment" x="-382" y="-42">timer = 0, init_avPods()</label>
-		</transition>
-		<transition>
-			<source ref="id11"/>
-			<target ref="id13"/>
-			<label kind="select" x="51" y="-153">i : int[0, 1000]</label>
-			<label kind="assignment" x="51" y="-136">choosePod(i)</label>
-			<nail x="102" y="-110"/>
 		</transition>
 		<transition>
 			<source ref="id10"/>
