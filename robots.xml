@@ -206,6 +206,7 @@ pop() ,nTask--</label>
     Future implementation: T is a sample of a normal distribution
 
     IMPORTANT: What to do if no pod is available?
+    SOLUTION: If no pod is available Task returns to idle without doing anything. After another T-second interval it will try to send another request
 */
 
 clock timer;
@@ -240,8 +241,8 @@ void choosePod(int i) {
     chosenPod = avPods[chosen];
 }</declaration>
 		<location id="id7" x="-178" y="-42">
-			<name x="-153" y="-59">idle</name>
-			<label kind="invariant" x="-153" y="-42">timer &lt;= T</label>
+			<name x="-153" y="-42">idle</name>
+			<label kind="invariant" x="-161" y="-25">timer &lt;= T</label>
 		</location>
 		<location id="id8" x="102" y="-42">
 			<name x="127" y="-51">creatingTask</name>
@@ -252,14 +253,21 @@ void choosePod(int i) {
 			<committed/>
 		</location>
 		<location id="id10" x="-42" y="-110">
-			<name x="-52" y="-144">addingTask</name>
+			<name x="-51" y="-153">addingTask</name>
 			<committed/>
 		</location>
 		<init ref="id9"/>
 		<transition>
 			<source ref="id10"/>
 			<target ref="id7"/>
-			<label kind="synchronisation" x="-187" y="-170">newTask!</label>
+			<label kind="guard" x="-102" y="-85">chosenPod[0] == -1</label>
+			<label kind="assignment" x="-127" y="-68">init_avPods(), timer = 0</label>
+		</transition>
+		<transition>
+			<source ref="id10"/>
+			<target ref="id7"/>
+			<label kind="guard" x="-212" y="-170">chosenPod[0] != -1</label>
+			<label kind="synchronisation" x="-187" y="-187">newTask!</label>
 			<label kind="assignment" x="-229" y="-153">init_avPods(), timer = 0,
 tmp_taskpod = chosenPod</label>
 			<nail x="-178" y="-110"/>
