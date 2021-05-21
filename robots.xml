@@ -115,16 +115,44 @@ int botPosition[2] = entryPoint;
     5: the spot is the delivery point
 */
 int checkPositions(int direction){
-    switch(direction){
-        case 0:
-            if(grid[botPosition[0]--][botPosition[1]] == 1) return 0;
-            break;
-
+    int selectedCell;
+    if(direction == 0){
+        selectedCell = grid[botPosition[0]--][botPosition[1]];
     }
+    else if (direction == 1){
+        selectedCell = grid[botPosition[0]][botPosition[1]++];
+    }
+    else if (direction == 2){
+        selectedCell = grid[botPosition[0]++][botPosition[1]];
+    }
+    else if (direction == 3){
+        selectedCell = grid[botPosition[0]][botPosition[1]--];
+    }
+    
+    if(selectedCell == 0 || (selectedCell == 2 &amp;&amp; !isLifting) || selectedCell == 3 || selectedCell == 4 || selectedCell == 5) return 1;
+    else return 0;
 }
 
+/*
+    this function moves the robot by updating his position on the grid
+*/
 void move(){
-
+    if(moveDown == 1 &amp;&amp; moveRight == 0)
+    {
+        botPosition[0]++;
+    }
+    if(moveDown == 0 &amp;&amp; moveRight == 1)
+    {
+        botPosition[1]++; 
+    }
+    if(moveDown == -1 &amp;&amp; moveRight == 0)
+    {
+        botPosition[0]--;
+    }
+    if(moveDown == 0 &amp;&amp; moveRight == -1)
+    {
+        botPosition[1]--;
+    }
 }
 
 void goIdle(){
@@ -141,23 +169,18 @@ bool moveToPod(){
         moveDown = checkPositions(2);
     }
     else if((podPosition[0] - botPosition[0]) &lt; 0){
-        checkPositions(0)
-        moveDown = -1;
+        moveDown = -checkPositions(0);
     }
     else { moveDown = 0; }
      
     if((podPosition[1] - botPosition[1]) &gt; 0){
-        checkPositions(1);
-        moveRight = 1;
+        moveRight = checkPositions(1);
+        
     }
     else if((podPosition[1] - botPosition[1]) &lt; 0){
-        checkPositions(3);
-        moveRight = -1;
+        moveRight = -checkPositions(3);
     }
     else { moveRight = 0; }
-
-    // check for free cells
-    
     
     move();
     
