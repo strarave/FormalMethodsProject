@@ -125,8 +125,7 @@ void checkValidity2(){
 		<transition>
 			<source ref="id4"/>
 			<target ref="id2"/>
-			<label kind="guard" x="-544" y="-315">actualPodLifted==1</label>
-			<label kind="assignment" x="-535" y="-298">checkValidity2()</label>
+			<label kind="guard" x="-544" y="-297">actualPodLifted==1</label>
 			<nail x="-484" y="-272"/>
 		</transition>
 		<transition>
