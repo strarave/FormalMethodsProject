@@ -19,6 +19,9 @@
 
     miscellanueous notes:
         delivery point and entry point are known a priori
+
+        The temporary variable tmpCommunicatePodToBot is used to communicate the chosen pod to the bot
+        The temporary variable tmpPodChosenByTask is used to receive the pod chosen by the task template and append it to queueList
         
 
 */
@@ -64,7 +67,7 @@ void gridInitialization () {
 const int nBot = 10;
 typedef int[0, nBot - 1] bot_t;
 urgent chan claim[bot_t];
-meta int tmp_taskbot[2];
+meta int tmpCommunicatePodToBot[2];
 urgent chan lift[bot_t];
 urgent chan pose[bot_t];
 
@@ -74,10 +77,12 @@ const int maxT = 10;
 // Comunication Task - Queue
 const int TTask = 10;
 chan newTask;
-meta int tmp_taskpod[2];
+meta int tmpPodChosenByTask[2];
 
 // Human
-chan pickUp;</declaration>
+const int H = 20;
+chan pickUp;
+chan podDelivered;</declaration>
 	<template>
 		<name x="5" y="5">POD</name>
 		<declaration>// Place local declarations here.
@@ -90,7 +95,7 @@ void checkValidity(){
     int i,j;
     for (i = 0; i &lt; n; i++) {
         for (j = 0; j &lt; m; j++) {
-            if (tmp_taskbot[0] == grad[i]) {
+            if (tmpCommunicatePodToBot[0] == grid[i]) {
                 grid[i][j] == 2
                 avPods[avPods_quantity][0] = i;
                 avPods[avPods_quantity][1] = j;
@@ -126,7 +131,7 @@ void checkValidity2(){
 			<source ref="id4"/>
 			<target ref="id2"/>
 			<label kind="guard" x="-544" y="-297">actualPodLifted==1</label>
-			<nail x="-484" y="-272"/>
+			<nail x="-476" y="-272"/>
 		</transition>
 		<transition>
 			<source ref="id4"/>
@@ -137,7 +142,7 @@ void checkValidity2(){
 			<source ref="id3"/>
 			<target ref="id1"/>
 			<label kind="guard" x="-535" y="84">actualPodLifted==0</label>
-			<nail x="-467" y="84"/>
+			<nail x="-467" y="76"/>
 		</transition>
 		<transition>
 			<source ref="id2"/>
@@ -150,7 +155,7 @@ void checkValidity2(){
 			<source ref="id3"/>
 			<target ref="id2"/>
 			<label kind="guard" x="-714" y="-119">actualPodLifted==1</label>
-			<label kind="assignment" x="-833" y="-102">grid[tmp_taskbot[0]][tmp_taskbot[1]]==3</label>
+			<label kind="assignment" x="-1020" y="-102">grid[tmpCommunicatePodToBot[0]][tmpCommunicatePodToBot[1]]==3</label>
 		</transition>
 		<transition>
 			<source ref="id1"/>
@@ -232,8 +237,8 @@ void goIdle(){
 }
 
 void setPodPosition(){
-    podPosition[0] = tmp_taskbot[0];
-    podPosition[1] = tmp_taskbot[1];
+    podPosition[0] = tmpCommunicatePodToBot[0];
+    podPosition[1] = tmpCommunicatePodToBot[1];
 }
 
 bool moveToPod(){
@@ -322,6 +327,7 @@ bool returnPod(){}</declaration>
 		<transition>
 			<source ref="id6"/>
 			<target ref="id7"/>
+			<label kind="synchronisation" x="221" y="17">podDelivered!</label>
 		</transition>
 		<transition>
 			<source ref="id6"/>
@@ -355,6 +361,9 @@ bool returnPod(){}</declaration>
     When a new task is available, the template TASK send a newTask! and the queue collect the new task
     When a bot is idle, it sends a claim! to get the next task in the queue
     If a the queue receives a newTask and it is already full, it reaches a deadlock state
+
+    The temporary variable tmpCommunicatePodToBot is used to communicate the chosen pod to the bot
+    The temporary variable tmpPodChosenByTask is used to receive the pod chosen by the task template and append it to queueList
 */
 
 int nTask = 0;
@@ -404,7 +413,7 @@ void pop() {
 			<label kind="select" x="153" y="-204">i : int[0, nBot-1]</label>
 			<label kind="guard" x="153" y="-187">nTask &gt; 1</label>
 			<label kind="synchronisation" x="153" y="-170">claim[i]?</label>
-			<label kind="assignment" x="153" y="-153">tmp_taskbot = queueList[0],
+			<label kind="assignment" x="153" y="-153">tmpCommunicatePodToBot = queueList[0],
 pop() ,nTask--</label>
 			<nail x="161" y="-110"/>
 			<nail x="221" y="-110"/>
@@ -418,10 +427,10 @@ pop() ,nTask--</label>
 		<transition>
 			<source ref="id14"/>
 			<target ref="id13"/>
-			<label kind="select" x="-85" y="-187">i: int[0, nBot-1]</label>
-			<label kind="guard" x="-85" y="-170">nTask == 1</label>
-			<label kind="synchronisation" x="-85" y="-153">claim[i]?</label>
-			<label kind="assignment" x="-85" y="-136">tmp_taskbot = queueList[0],
+			<label kind="select" x="-127" y="-187">i: int[0, nBot-1]</label>
+			<label kind="guard" x="-127" y="-170">nTask == 1</label>
+			<label kind="synchronisation" x="-127" y="-153">claim[i]?</label>
+			<label kind="assignment" x="-127" y="-136">tmpCommunicatePodToBot = queueList[0],
 pop() ,nTask--</label>
 			<nail x="136" y="-93"/>
 			<nail x="-110" y="-93"/>
@@ -429,9 +438,10 @@ pop() ,nTask--</label>
 		<transition>
 			<source ref="id14"/>
 			<target ref="id14"/>
-			<label kind="guard" x="153" y="127">nTask &lt; maxT</label>
+			<label kind="guard" x="153" y="144">nTask &lt; maxT</label>
 			<label kind="synchronisation" x="153" y="93">newTask?</label>
-			<label kind="assignment" x="153" y="110">append(tmp_taskpod), nTask++</label>
+			<label kind="assignment" x="153" y="110">append(tmpPodChosenByTask), 
+nTask++</label>
 			<nail x="153" y="93"/>
 			<nail x="221" y="93"/>
 		</transition>
@@ -439,7 +449,8 @@ pop() ,nTask--</label>
 			<source ref="id13"/>
 			<target ref="id14"/>
 			<label kind="synchronisation" x="-102" y="68">newTask?</label>
-			<label kind="assignment" x="-102" y="85">append(tmp_taskpod), nTask++</label>
+			<label kind="assignment" x="-102" y="85">append(tmpPodChosenByTask),
+nTask++</label>
 			<nail x="-110" y="68"/>
 			<nail x="136" y="68"/>
 		</transition>
@@ -526,10 +537,10 @@ void choosePod(int i) {
 		<transition>
 			<source ref="id19"/>
 			<target ref="id16"/>
-			<label kind="guard" x="-212" y="-170">chosenPod[0] != -1</label>
-			<label kind="synchronisation" x="-187" y="-187">newTask!</label>
-			<label kind="assignment" x="-229" y="-153">init_avPods(), timer = 0,
-tmp_taskpod = chosenPod</label>
+			<label kind="guard" x="-297" y="-170">chosenPod[0] != -1</label>
+			<label kind="synchronisation" x="-297" y="-187">newTask!</label>
+			<label kind="assignment" x="-297" y="-153">init_avPods(), timer = 0,
+tmpPodChosenByTask = chosenPod</label>
 			<nail x="-178" y="-110"/>
 		</transition>
 		<transition>
@@ -548,14 +559,43 @@ tmp_taskpod = chosenPod</label>
 	</template>
 	<template>
 		<name>HUMAN</name>
-		<location id="id20" x="0" y="0">
+		<parameter>int H</parameter>
+		<declaration>/* 
+    The human operator waits for a pod that communicates that a pod has been delivered.
+    After receiveing the message he stays in busy for H seconds and after that communicates to the robot it is free to go
+*/
+
+clock timer;</declaration>
+		<location id="id20" x="-323" y="-34">
+			<name x="-374" y="-43">free</name>
+		</location>
+		<location id="id21" x="0" y="-34">
+			<name x="17" y="-51">busy</name>
+			<label kind="invariant" x="17" y="-34">timer &lt;= H</label>
 		</location>
 		<init ref="id20"/>
+		<transition>
+			<source ref="id21"/>
+			<target ref="id20"/>
+			<label kind="guard" x="-212" y="-170">timer &gt;= H</label>
+			<label kind="synchronisation" x="-212" y="-153">pickUp!</label>
+			<nail x="0" y="-119"/>
+			<nail x="-323" y="-119"/>
+		</transition>
+		<transition>
+			<source ref="id20"/>
+			<target ref="id21"/>
+			<label kind="synchronisation" x="-306" y="68">podDelivered?</label>
+			<label kind="assignment" x="-305" y="51">timer = 0</label>
+			<nail x="-323" y="51"/>
+			<nail x="0" y="51"/>
+		</transition>
 	</template>
 	<system>q = QUEUE();
 t = TASK(TTask);
 p = POD();
-system p, t, q;</system>
+h = HUMAN(H);
+system p, t, q, h;</system>
 	<queries>
 		<query>
 			<formula></formula>
