@@ -114,7 +114,7 @@ int actualPodLifted=0;
 			<source ref="id4"/>
 			<target ref="id1"/>
 			<label kind="guard" x="-365" y="-119">actualPodLifted==1</label>
-			<label kind="assignment" x="-365" y="-102">grid[tmpCommunicateBotToPod[0][tmpCommunicateBotToPod[1]]==2,
+			<label kind="assignment" x="-365" y="-102">grid[tmpCommunicateBotToPod[0]][tmpCommunicateBotToPod[1]]=2,
 actualPodLifted=0</label>
 		</transition>
 		<transition>
@@ -126,7 +126,7 @@ actualPodLifted=0</label>
 			<source ref="id3"/>
 			<target ref="id2"/>
 			<label kind="guard" x="-714" y="-119">actualPodLifted==0</label>
-			<label kind="assignment" x="-1020" y="-102">grid[tmpCommunicateBotToPod[0][tmpCommunicateBotToPod[1]]==3,
+			<label kind="assignment" x="-1020" y="-102">grid[tmpCommunicateBotToPod[0]][tmpCommunicateBotToPod[1]]=3,
 actualPodLifted=1</label>
 		</transition>
 		<transition>
@@ -149,20 +149,22 @@ int[-1, 1] moveRight;
 int podPosition[2];
 int botPosition[2] = entryPoint;
 int positionWithoutBot = 0;
-int randomDirection;
+
 
 /*
    direction is an integer starting from 0 to 3 that represents the cardinal points around the 
    botPosition. 0 is north, clockwise order
    the grid:
 
-    The grid is n x m matrix of integers and has as elements a number in [0,2]
+    The grid is n x m matrix of integers and has as elements a number in [0,7]
     0: the spot is free
-    1: the spot is occupied by a bot (it does not matter if it has a pod or not)
+    1: the spot is occupied by a bot with no pod over it
     2: the spot is occupied by a pod and the pod is free (so no bot under the pod)
-    3: the spot is occupied by a pod and the pod is claimed by a task
+    3: the spot is occupied by a pod and the pod is claimed by a task (so no bot under the pod)
     4: the spot is the entry point
     5: the spot is the delivery point
+    6: the spot is occupied by a bot and a free pod
+    7: the spot is occupied by a bot and a claimed pod
 */
 int checkPositions(int direction){
     int selectedCell;
@@ -179,7 +181,7 @@ int checkPositions(int direction){
         selectedCell = grid[botPosition[0]][botPosition[1]--];
     }
     
-    if(selectedCell == 0 || (selectedCell == 2 &amp;&amp; !isLifting) || selectedCell == 3 || selectedCell == 4 || selectedCell == 5) return 1;
+    if(selectedCell == 0 || (selectedCell == 2 &amp;&amp; !isLifting) || (selectedCell == 3 &amp;&amp; !isLifting) || (selectedCell == 6 &amp;&amp; !isLifting) || selectedCell == 4 || selectedCell == 5) return 1;
     else return 0;
 }
 
@@ -368,7 +370,7 @@ Going to pod position</label>
 		<transition>
 			<source ref="id8"/>
 			<target ref="id8"/>
-			<label kind="select" x="451" y="-569">randomDirection : int[0,1]</label>
+			<label kind="select" x="450" y="-552">randomDirection : int[0,1]</label>
 			<label kind="guard" x="612" y="-501">!checkArrived(podPosition)</label>
 			<label kind="assignment" x="612" y="-484">moveToPod()</label>
 			<nail x="433" y="-518"/>
@@ -517,7 +519,7 @@ void checkAv () { /*Function to check which pods are available*/
     avPods_quantity = 0;
     for (i = 0; i &lt; n; i++) {
         for (j = 0; j &lt; m; j++) {
-            if (grid[i][j] == 2) {
+            if (grid[i][j] == 2 || grid[i][j] == 6) {
                 avPods[avPods_quantity][0] = i;
                 avPods[avPods_quantity][1] = j;
                 avPods_quantity ++;
@@ -543,15 +545,26 @@ void choosePod(int i) {
 			<committed/>
 		</location>
 		<location id="id19" x="-42" y="-110">
-			<name x="-51" y="-153">addingTask</name>
+			<name x="-25" y="-136">addingTask</name>
 			<committed/>
 		</location>
 		<init ref="id18"/>
 		<transition>
+			<source ref="id19"/>
+			<target ref="id16"/>
+			<label kind="select" x="-306" y="-255">newTask!</label>
+			<label kind="guard" x="-306" y="-238">chosenPod[0] != -1 &amp;&amp;
+grid[chosenPod[0]][chosenPod[1]] == 6</label>
+			<label kind="assignment" x="-306" y="-195">init_avPods(), timer = 0,
+tmpPodChosenByTask = chosenPod,
+grid[chosenPod[0]][chosenPod[1]] = 7</label>
+			<nail x="-178" y="-110"/>
+		</transition>
+		<transition>
 			<source ref="id17"/>
 			<target ref="id19"/>
 			<label kind="select" x="76" y="-153">i : int[0, 1000]</label>
-			<label kind="assignment" x="34" y="-136">chosenPod = choosePod(i)</label>
+			<label kind="assignment" x="76" y="-136">choosePod(i)</label>
 			<nail x="102" y="-110"/>
 		</transition>
 		<transition>
@@ -563,11 +576,15 @@ void choosePod(int i) {
 		<transition>
 			<source ref="id19"/>
 			<target ref="id16"/>
-			<label kind="guard" x="-297" y="-170">chosenPod[0] != -1</label>
-			<label kind="synchronisation" x="-297" y="-187">newTask!</label>
-			<label kind="assignment" x="-297" y="-153">init_avPods(), timer = 0,
-tmpPodChosenByTask = chosenPod</label>
-			<nail x="-178" y="-110"/>
+			<label kind="guard" x="-365" y="-450">chosenPod[0] != -1 &amp;&amp;
+grid[chosenPod[0]][chosenPod[1]] == 2</label>
+			<label kind="synchronisation" x="-365" y="-467">newTask!</label>
+			<label kind="assignment" x="-365" y="-408">init_avPods(), timer = 0,
+tmpPodChosenByTask = chosenPod,
+grid[chosenPod[0]][chosenPod[1]] = 3</label>
+			<nail x="-42" y="-331"/>
+			<nail x="-357" y="-331"/>
+			<nail x="-357" y="-85"/>
 		</transition>
 		<transition>
 			<source ref="id18"/>
