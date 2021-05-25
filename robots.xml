@@ -68,8 +68,8 @@ const int nBot = 10;
 typedef int[0, nBot - 1] bot_t;
 urgent chan claim[bot_t];
 meta int tmpCommunicatePodToBot[2];
-urgent chan lift[bot_t];
-urgent chan pose[bot_t];
+urgent chan lift;
+urgent chan pose;
 
 // Queue
 const int maxT = 10;
@@ -82,7 +82,10 @@ meta int tmpPodChosenByTask[2];
 // Human
 const int H = 20;
 chan pickUp;
-chan podDelivered;</declaration>
+chan podDelivered;
+
+//POD
+meta int tmpCommunicateBotToPod[2];</declaration>
 	<template>
 		<name x="5" y="5">POD</name>
 		<declaration>// Place local declarations here.
@@ -91,27 +94,7 @@ chan podDelivered;</declaration>
 
 
 int actualPodLifted=0;
-void checkValidity(){
-    int i,j;
-    for (i = 0; i &lt; n; i++) {
-        for (j = 0; j &lt; m; j++) {
-            if (tmpCommunicatePodToBot[0] == grid[i]) {
-                grid[i][j] == 2
-                avPods[avPods_quantity][0] = i;
-                avPods[avPods_quantity][1] = j;
-                avPods_quantity ++;
-                actualPodLifted=1;
-            }
-        }
-    }
-    
-
-}
-
-void checkValidity2(){
-
-
-}</declaration>
+</declaration>
 		<location id="id0" x="-119" y="-9">
 			<name x="-129" y="-43">start</name>
 			<committed/>
@@ -129,40 +112,27 @@ void checkValidity2(){
 		<init ref="id0"/>
 		<transition>
 			<source ref="id4"/>
-			<target ref="id2"/>
-			<label kind="guard" x="-544" y="-297">actualPodLifted==1</label>
-			<nail x="-476" y="-272"/>
-		</transition>
-		<transition>
-			<source ref="id4"/>
 			<target ref="id1"/>
-			<label kind="guard" x="-365" y="-119">actualPodLifted==0</label>
-		</transition>
-		<transition>
-			<source ref="id3"/>
-			<target ref="id1"/>
-			<label kind="guard" x="-535" y="84">actualPodLifted==0</label>
-			<nail x="-467" y="76"/>
+			<label kind="guard" x="-365" y="-119">actualPodLifted==1</label>
+			<label kind="assignment" x="-365" y="-102">grid[tmpCommunicateBotToPod[0][tmpCommunicateBotToPod[1]]==2,
+actualPodLifted=0</label>
 		</transition>
 		<transition>
 			<source ref="id2"/>
 			<target ref="id4"/>
-			<label kind="select" x="-518" y="-179">i: int[0, nBot-1]</label>
-			<label kind="synchronisation" x="-501" y="-162">pose[i]?</label>
-			<label kind="assignment" x="-535" y="-145">checkValidity2()</label>
+			<label kind="synchronisation" x="-501" y="-178">pose?</label>
 		</transition>
 		<transition>
 			<source ref="id3"/>
 			<target ref="id2"/>
-			<label kind="guard" x="-714" y="-119">actualPodLifted==1</label>
-			<label kind="assignment" x="-1020" y="-102">grid[tmpCommunicatePodToBot[0]][tmpCommunicatePodToBot[1]]==3</label>
+			<label kind="guard" x="-714" y="-119">actualPodLifted==0</label>
+			<label kind="assignment" x="-1020" y="-102">grid[tmpCommunicateBotToPod[0][tmpCommunicateBotToPod[1]]==3,
+actualPodLifted=1</label>
 		</transition>
 		<transition>
 			<source ref="id1"/>
 			<target ref="id3"/>
-			<label kind="select" x="-518" y="-77">i: int[0, nBot-1]</label>
-			<label kind="synchronisation" x="-485" y="-60">lift[i]?</label>
-			<label kind="assignment" x="-518" y="-43">checkValidity()</label>
+			<label kind="synchronisation" x="-493" y="-34">lift?</label>
 		</transition>
 		<transition>
 			<source ref="id0"/>
@@ -273,6 +243,8 @@ void computeMove(int destination[2]){
 void setPodPosition(){
     podPosition[0] = tmpCommunicatePodToBot[0];
     podPosition[1] = tmpCommunicatePodToBot[1];
+    tmpCommunicateBotToPod[0] = podPosition[0];
+    tmpCommunicateBotToPod[1] = podPosition[1];
 }
 
 void moveToPod(){
@@ -289,7 +261,7 @@ void moveTowardsStartPoint(){
     computeMove(entryPoint);
     move();
 }
-
+ // QUESTA FUNZIONE E' SUPERFLUA C'E' GIA' moveToPod() IDENTICA (?)
 void returnPod(){
     computeMove(podPosition);
     move();
@@ -347,8 +319,8 @@ Going to pod position</label>
 			<source ref="id10"/>
 			<target ref="id10"/>
 			<label kind="select" x="-356" y="127">randomDirection : int[0,1]</label>
-			<label kind="guard" x="-246" y="102">!checkArrived(podPosition)</label>
-			<label kind="assignment" x="-246" y="119">returnPod()</label>
+			<label kind="guard" x="-246" y="85">!checkArrived(podPosition)</label>
+			<label kind="assignment" x="-246" y="102">returnPod()</label>
 			<nail x="-255" y="178"/>
 			<nail x="-374" y="178"/>
 			<nail x="-374" y="17"/>
@@ -357,6 +329,7 @@ Going to pod position</label>
 			<source ref="id10"/>
 			<target ref="id11"/>
 			<label kind="guard" x="-246" y="-110">checkArrived(podPosition)</label>
+			<label kind="synchronisation" x="-246" y="-76">pose!</label>
 			<label kind="assignment" x="-246" y="-93">isLifting = false</label>
 		</transition>
 		<transition>
@@ -389,6 +362,7 @@ Going to pod position</label>
 			<source ref="id8"/>
 			<target ref="id6"/>
 			<label kind="guard" x="442" y="-238">checkArrived(podPosition)</label>
+			<label kind="synchronisation" x="450" y="-187">lift!</label>
 			<label kind="assignment" x="442" y="-212">isLifting = true</label>
 		</transition>
 		<transition>
