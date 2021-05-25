@@ -552,9 +552,9 @@ void choosePod(int i) {
 		<transition>
 			<source ref="id19"/>
 			<target ref="id16"/>
-			<label kind="select" x="-306" y="-255">newTask!</label>
 			<label kind="guard" x="-306" y="-238">chosenPod[0] != -1 &amp;&amp;
 grid[chosenPod[0]][chosenPod[1]] == 6</label>
+			<label kind="synchronisation" x="-306" y="-255">newTask!</label>
 			<label kind="assignment" x="-306" y="-195">init_avPods(), timer = 0,
 tmpPodChosenByTask = chosenPod,
 grid[chosenPod[0]][chosenPod[1]] = 7</label>
