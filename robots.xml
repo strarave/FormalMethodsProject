@@ -179,10 +179,11 @@ int[-1, 1] moveRight;
 int podPosition[2];
 int botPosition[2] = entryPoint;
 
-// direction is an integer starting from 0 to 3 that represents the cardinal points around the 
-// botPosition. 0 is north, clockwise order
-// the grid:
-/* 
+/*
+   direction is an integer starting from 0 to 3 that represents the cardinal points around the 
+   botPosition. 0 is north, clockwise order
+   the grid:
+
     The grid is n x m matrix of integers and has as elements a number in [0,2]
     0: the spot is free
     1: the spot is occupied by a bot (it does not matter if it has a pod or not)
@@ -230,10 +231,30 @@ void move(){
     {
         botPosition[1]--;
     }
+
+    // update the grid
+    grid[botPosition[0]][botPosition[1]] = 1;
 }
 
-void goIdle(){
-
+// CHECK SIGNS
+void computeMove(int destination[2]){
+    if((destination[0] - botPosition[0]) &gt; 0){
+        moveDown = checkPositions(2);
+    }
+    else if((destination[0] - botPosition[0]) &lt; 0){
+        moveDown = -checkPositions(0);
+    }
+    else { moveDown = 0; }
+     
+    if((destination[1] - botPosition[1]) &gt; 0){
+        moveRight = checkPositions(1);
+        
+    }
+    else if((destination[1] - botPosition[1]) &lt; 0){
+        moveRight = -checkPositions(3);
+    }
+    else { moveRight = 0; }
+   
 }
 
 void setPodPosition(){
@@ -241,38 +262,29 @@ void setPodPosition(){
     podPosition[1] = tmpCommunicatePodToBot[1];
 }
 
-bool moveToPod(){
-    if((podPosition[0] - botPosition[0]) &gt; 0){
-        moveDown = checkPositions(2);
-    }
-    else if((podPosition[0] - botPosition[0]) &lt; 0){
-        moveDown = -checkPositions(0);
-    }
-    else { moveDown = 0; }
-     
-    if((podPosition[1] - botPosition[1]) &gt; 0){
-        moveRight = checkPositions(1);
-        
-    }
-    else if((podPosition[1] - botPosition[1]) &lt; 0){
-        moveRight = -checkPositions(3);
-    }
-    else { moveRight = 0; }
-    
+void moveToPod(){
+    computeMove(podPosition);
     move();
-        
 }
 
-bool moveToDelivery(){}
+void moveToDelivery(){
+    computeMove(deliveryPoint);    
+    move();
+}
 
-bool returnPod(){}  /*Can we use moveToPod?*/
+void moveTowardsStartPoint(){
+    computeMove(entryPoint);
+    move();
+}
 
+void returnPod(){
+    computeMove(podPosition);
+    move();
+}
 
-// Qui ho aggiunto io qualcosa visto che mi annoiavo e nopn avevo niente da fare... se non va bene elimina pure tutto
 bool checkArrived(int destination[2]) {
     if (botPosition[0] == destination[0] &amp;&amp; botPosition[1] == destination[1]) {return true;}
     else {return false;}
-
 }</declaration>
 		<location id="id5" x="-255" y="-425">
 			<name x="-265" y="-459">idle</name>
@@ -316,7 +328,6 @@ Going to pod position</label>
 			<source ref="id11"/>
 			<target ref="id5"/>
 			<label kind="guard" x="-246" y="-340">checkArrived(entryPoint)</label>
-			<label kind="assignment" x="-246" y="-357">goIdle()</label>
 		</transition>
 		<transition>
 			<source ref="id10"/>
