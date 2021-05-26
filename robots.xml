@@ -149,6 +149,7 @@ int[-1, 1] moveRight;
 int podPosition[2];
 int botPosition[2] = entryPoint;
 int positionWithoutBot = 0;
+int preGridValue = 4; /* Variable that stores the previous state of the grid */
 
 
 /*
@@ -210,6 +211,23 @@ void move(){
         return;
     }
     else{
+        
+        /* Restore the previous value of the grid */
+        if grid[botPosition[0]][botPosition[1]] == 1 {
+            grid[botPosition[0]][botPosition[1]] = preGridValue;
+        }
+        elseif grid[botPosition[0]][botPosition[1]] == 6 {
+            grid[botPosition[0]][botPosition[1]] = 2;
+        }
+        elseif grid[botPosition[0]][botPosition[1]] == 7 {
+            if (botPosition[0] == deliveryPoint[0] &amp;&amp; botPosition[1] == deliveryPoint[1])
+                grid[botPosition[0]][botPosition[1]] = 5;
+            else {
+                grid[botPosition[0]][botPosition[1]] = 3;
+            }
+        }
+        else {/*ERROR*/}
+
         if(moveDown != 0 &amp;&amp; moveRight == 0) botPosition[0] += moveDown;
         else if(moveDown == 0 &amp;&amp; moveRight != 0) botPosition[1] += moveRight;
         else{
@@ -217,8 +235,19 @@ void move(){
         }
     }
 
+    preGridValue = grid[botPosition[0]][botPosition[1]];
+
     // update the grid
-    grid[botPosition[0]][botPosition[1]] = 1;
+    if preGridValue == 2 {
+        grid[botPosition[0]][botPosition[1]] = 6;
+    }
+    elseif preGridValue == 3 {
+        grid[botPosition[0]][botPosition[1]] = 7;
+    }
+    else {
+        grid[botPosition[0]][botPosition[1]] = 1;
+    }
+    
 }
 
 // CHECK SIGNS
