@@ -109,6 +109,7 @@ meta int tmpCommunicateBotToPod[2];</declaration>
 		<name>BOT</name>
 		<parameter>bot_t ID</parameter>
 		<declaration>bool isLifting;
+bool isReturning;
 clock timer;
 int[-1, 1] moveDown;
 int[-1, 1] moveRight;
@@ -137,18 +138,18 @@ int preGridValue = 4; /* Variable that stores the previous state of the grid */
 int checkPositions(int direction){
     int selectedCell;
     if(direction == 0){
-        selectedCell = grid[botPosition[0]-1][botPosition[1]];
+        selectedCell = grid[botPosition[0] - 1][botPosition[1]];
     }
     else if (direction == 1){
-        selectedCell = grid[botPosition[0]][botPosition[1]+1];
+        selectedCell = grid[botPosition[0]][botPosition[1] + 1];
     }
     else if (direction == 2){
-        selectedCell = grid[botPosition[0]+1][botPosition[1]];
+        selectedCell = grid[botPosition[0] + 1][botPosition[1]];
     }
     else if (direction == 3){
-        selectedCell = grid[botPosition[0]][botPosition[1]-1];
+        selectedCell = grid[botPosition[0]][botPosition[1] - 1];
     }
-    
+
     if(selectedCell == 0 || (selectedCell == 2 &amp;&amp; !isLifting) || (selectedCell == 3 &amp;&amp; !isLifting) || (selectedCell == 4 &amp;&amp; !isLifting) || selectedCell == 5) return 1;
     else return 0;
 }
@@ -213,6 +214,15 @@ void computeMove(int destination[2]){
     }
     else if((destination[1] - botPosition[1]) &lt; 0){
         moveRight = -checkPositions(3);
+        
+        // additional check for returning pods
+        // controls if the row it's entering is free
+        // it's only here due to the particular configuration of starting point and entry point
+        if(isReturning){
+            forall(i : grid[botPosition[0]]){
+                if(i == 7) moveRight = 0;
+            }
+        }
     }
     else { moveRight = 0; }
    
@@ -328,19 +338,22 @@ timer = 0</label>
 			<target ref="id8"/>
 			<label kind="guard" x="-306" y="-93">checkArrived(podPosition) &amp;&amp; timer &gt;= K</label>
 			<label kind="assignment" x="-246" y="-76">isLifting = false,
-timer = 0</label>
+timer = 0,
+isReturning = false</label>
 		</transition>
 		<transition>
 			<source ref="id6"/>
 			<target ref="id5"/>
 			<label kind="assignment" x="195" y="-450">setPodPosition(),
-timer = 0</label>
+timer = 0,
+isReturning = false</label>
 		</transition>
 		<transition>
 			<source ref="id4"/>
 			<target ref="id7"/>
 			<label kind="synchronisation" x="-102" y="17">pickUp?</label>
-			<label kind="assignment" x="-102" y="34">timer = 0</label>
+			<label kind="assignment" x="-102" y="34">timer = 0,
+isReturning = true</label>
 		</transition>
 		<transition>
 			<source ref="id3"/>
