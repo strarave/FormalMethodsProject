@@ -25,11 +25,6 @@
         
 
 */
-
-// Channels
-
-
-
 // Modelling the grid:
 /* 
     The grid is n x m matrix of integers and has as elements a number in [0,7]
@@ -66,6 +61,7 @@ void gridInitialization () {
 }
 
 // Bots
+const int K = 1;
 const int nBot = 10;
 typedef int[0, nBot - 1] bot_t;
 urgent chan claim[bot_t];
@@ -111,7 +107,7 @@ meta int tmpCommunicateBotToPod[2];</declaration>
 	</template>
 	<template>
 		<name>BOT</name>
-		<parameter>bot_t ID, int K</parameter>
+		<parameter>bot_t ID</parameter>
 		<declaration>bool isLifting;
 clock timer;
 int[-1, 1] moveDown;
@@ -269,7 +265,7 @@ bool checkArrived(int destination[2]) {
 		</location>
 		<location id="id3" x="433" y="17">
 			<name x="450" y="-85">podReached</name>
-			<label kind="invariant" x="450" y="-17">timer &lt; K</label>
+			<label kind="invariant" x="450" y="-17">timer &lt;= K</label>
 			<label kind="comments" x="450" y="-59">Pod reached and lifted
 Going to delivery point</label>
 		</location>
@@ -280,7 +276,7 @@ Waiting for human to complete task</label>
 		</location>
 		<location id="id5" x="433" y="-425">
 			<name x="450" y="-416">taskClaimed</name>
-			<label kind="invariant" x="450" y="-357">timer &lt; K</label>
+			<label kind="invariant" x="450" y="-357">timer &lt;= K</label>
 			<label kind="comments" x="450" y="-391">Task claimed
 Going to pod position</label>
 		</location>
@@ -290,12 +286,12 @@ Going to pod position</label>
 		</location>
 		<location id="id7" x="-255" y="17">
 			<name x="-348" y="-17">podReturn</name>
-			<label kind="invariant" x="-348" y="0">timer &lt; K</label>
+			<label kind="invariant" x="-348" y="0">timer &lt;= K</label>
 			<label kind="comments" x="-442" y="-42">Returning to pod position</label>
 		</location>
 		<location id="id8" x="-255" y="-204">
 			<name x="-238" y="-213">returnToStartPoint</name>
-			<label kind="invariant" x="-238" y="-195">timer &lt; K</label>
+			<label kind="invariant" x="-238" y="-195">timer &lt;= K</label>
 		</location>
 		<init ref="id2"/>
 		<transition>
@@ -642,15 +638,14 @@ clock timer;
 			<nail x="0" y="51"/>
 		</transition>
 	</template>
-	<system>b = BOT(1, 1);
-q = QUEUE();
-t = TASK(TTask);
-p = POD();
-h = HUMAN(H);
-system b, p, t, q, h;</system>
+	<system>queue = QUEUE();
+task = TASK(TTask); // tasks generator
+pod1 = POD();
+human  = HUMAN(H);
+system queue, task, pod1, human, BOT;</system>
 	<queries>
 		<query>
-			<formula></formula>
+			<formula>E&lt;&gt;(queue.LostAPacket)</formula>
 			<comment></comment>
 		</query>
 	</queries>
