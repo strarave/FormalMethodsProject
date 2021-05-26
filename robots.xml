@@ -154,6 +154,51 @@ int checkPositions(int direction){
     else return 0;
 }
 
+void computeMove(int destination[2]){
+    if(!isReturning){ // enjoy some free movement
+        if((destination[0] - botPosition[0]) &gt; 0){
+            moveDown = checkPositions(2);
+        }
+        else if((destination[0] - botPosition[0]) &lt; 0){
+            moveDown = -checkPositions(0);
+        }
+        else { moveDown = 0; }
+     
+        if((destination[1] - botPosition[1]) &gt; 0){
+            moveRight = checkPositions(1);
+        }
+        else if((destination[1] - botPosition[1]) &lt; 0){
+            moveRight = -checkPositions(3);
+        }
+        else { moveRight = 0; }
+    } else { 
+        // L-shaped trajectory (up/down then left/right)
+        if((destination[0] - botPosition[0]) &gt; 0){
+            moveDown = checkPositions(2);
+        }
+        else if((destination[0] - botPosition[0]) &lt; 0){
+            moveDown = -checkPositions(0);
+        } else {
+            if((destination[1] - botPosition[1]) &gt; 0){
+                moveRight = checkPositions(1);
+            }
+            else if((destination[1] - botPosition[1]) &lt; 0){
+                moveRight = -checkPositions(3);
+            }
+        }
+    }
+}
+
+// this method checks if the row I'm trying to enter is free of bots returning pods
+bool rowClear(int currentRow){
+    int rowToCheck = currentRow--; // assumption: the delivery point is always "on top" of the grid representation
+
+    /*
+        TODO: loop to check the above row if free of returnning pods
+    */
+    
+}
+
 /*
     this function moves the robot by updating his position on the grid
 */
@@ -180,10 +225,17 @@ void move(){
                 grid[botPosition[0]][botPosition[1]] = 3;
             }
         }
-
-        if(moveDown != 0) botPosition[0] += moveDown;
-        else if(moveDown == 0 &amp;&amp; moveRight != 0) botPosition[1] += moveRight;
         
+        if(moveDown != 0){
+            if(moveRight != 0){ 
+                // random choice
+                // to ensure non-L trajectories when they're not necessary
+                if(randomDirection == 0) botPosition[0] += moveDown;
+                else botPosition[1] += moveRight;
+            }
+            else botPosition[0] += moveDown;
+        }
+        else if(moveRight != 0) botPosition[1] += moveRight;
     }
 
     // update the grid
@@ -201,38 +253,6 @@ void move(){
     else {
         grid[botPosition[0]][botPosition[1]] = 4;
     }
-}
-
-void computeMove(int destination[2]){
-    if((destination[0] - botPosition[0]) &gt; 0){
-        moveDown = checkPositions(2);
-    }
-    else if((destination[0] - botPosition[0]) &lt; 0){
-        moveDown = -checkPositions(0);
-    }
-    else { moveDown = 0; }
-     
-    if((destination[1] - botPosition[1]) &gt; 0){
-        moveRight = checkPositions(1);
-    }
-    else if((destination[1] - botPosition[1]) &lt; 0){
-        moveRight = -checkPositions(3);
-        
-        // additional check for returning pods
-        // controls if the row it's entering is free
-        // it's only here due to the particular configuration of starting point and entry point
-        if(isReturning){
-            int i;
-            for (i = 0; i &lt; n; i++) {
-                if (grid[botPosition[0]][i] == 7) {moveRight = 0;}
-            }
-            /*forall(i : grid[botPosition[0]]){
-                if(i == 7) moveRight = 0;
-            }*/
-        }
-    }
-    else { moveRight = 0; }
-   
 }
 
 void setPodPosition(){
@@ -274,7 +294,7 @@ void returnPod(){
 }
 
 bool checkArrived(int destination[2]) {
-    if (botPosition[0] == destination[0] &amp;&amp; botPosition[1] == destination[1]) {return true;}
+    if (botPosition[0] == destination[0] &amp;&amp; botPosition[1] == destination[1] &amp;&amp; (rowClear(botPosition[0] + 1) || isReturning)) {return true;}
     else {return false;}
 }</declaration>
 		<location id="id2" x="-255" y="-425">
