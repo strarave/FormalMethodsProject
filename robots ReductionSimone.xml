@@ -214,6 +214,22 @@ void move(){
     }
 }
 
+bool checkLine(int line, int limit0, int limit1) {
+    int cellCheck;
+    bool free = true;
+    if (limit0 &gt; limit1) {
+        limit0 += limit0;
+        limit0 = limit1 - limit0;
+        limit1 -= limit0;
+    }
+    for (cellCheck = limit0; cellCheck &lt;= limit1; cellCheck++) {
+        if (grid[line][cellCheck] != 0) {
+            free = false;
+        }
+    }
+    return free;
+}
+
 void setPodPosition(){
     podPosition[0] = tmpCommunicatePodToBot[0];
     podPosition[1] = tmpCommunicatePodToBot[1];
@@ -228,7 +244,13 @@ void moveToPod(){
 
 void moveToDelivery(){
     // same as returnPod, the free space under the delivery point must be the target
-    if( (botPosition[0] == deliveryPoint[0] + 1 &amp;&amp; botPosition[1] == deliveryPoint[1])){
+    bool checked = true;
+    if (botPosition[0] == 0 &amp;&amp; botPosition[0] == podPosition[0] &amp;&amp; botPosition[1] == podPosition[1]) {checked = checkLine(botPosition[0]+1,botPosition[1],9);}
+    else if(botPosition[0] == podPosition[0] &amp;&amp; botPosition[1] == podPosition[1]) {checked = checkLine(botPosition[0]-1,botPosition[1],9);}
+    if ( (botPosition[0] == podPosition[0] &amp;&amp; botPosition[1] == podPosition[1]) &amp;&amp; !checked){
+    /* Do Nothing */
+    }
+    else if( (botPosition[0] == deliveryPoint[0] + 1 &amp;&amp; botPosition[1] == deliveryPoint[1])){
         computeMove(deliveryPoint);    
         move();
     }
