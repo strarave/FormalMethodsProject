@@ -191,12 +191,14 @@ void computeMove(int destination[2]){
 
 // this method checks if the row I'm trying to enter is free of bots returning pods
 bool rowClear(int currentRow){
-    int rowToCheck = currentRow--; // assumption: the delivery point is always "on top" of the grid representation
+    int scanIndex;
+    int rowToCheck;
+    rowToCheck = currentRow--; // assumption: the delivery point is always "on top" of the grid representation
 
-    /*
-        TODO: loop to check the above row if free of returnning pods
-    */
-    
+    for(scanIndex = 0; scanIndex &lt; m; scanIndex++)
+        if(grid[rowToCheck][scanIndex] == 7) return false;
+
+    return true;
 }
 
 /*
@@ -294,8 +296,13 @@ void returnPod(){
 }
 
 bool checkArrived(int destination[2]) {
-    if (botPosition[0] == destination[0] &amp;&amp; botPosition[1] == destination[1] &amp;&amp; (rowClear(botPosition[0] + 1) || isReturning)) {return true;}
-    else {return false;}
+    if (botPosition[0] == destination[0] &amp;&amp; 
+        botPosition[1] == destination[1] &amp;&amp; // coordinate check
+        (rowClear(botPosition[0]) || // upper row free
+        isReturning || // either returning 
+        !isLifting)) // or not delivering bot (this condition is verified just before entering a row) 
+            return true;
+    else return false;
 }</declaration>
 		<location id="id2" x="-255" y="-425">
 			<name x="-265" y="-459">idle</name>
