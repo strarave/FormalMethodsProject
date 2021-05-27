@@ -193,11 +193,11 @@ void computeMove(int destination[2]){
 bool rowClear(int currentRow){
     int scanIndex;
     int rowToCheck;
-    rowToCheck = currentRow--; // assumption: the delivery point is always "on top" of the grid representation
-
-    for(scanIndex = 0; scanIndex &lt; m; scanIndex++)
-        if(grid[rowToCheck][scanIndex] == 7) return false;
-
+    if(currentRow != 0){
+        rowToCheck = currentRow--; // assumption: the delivery point is always "on top" of the grid representation
+        for(scanIndex = 0; scanIndex &lt; m; scanIndex++)
+            if(grid[rowToCheck][scanIndex] == 7) return false;
+    }
     return true;
 }
 
@@ -692,7 +692,11 @@ human  = HUMAN(H);
 system queue, task, pod1, human, BOT;</system>
 	<queries>
 		<query>
-			<formula>E&lt;&gt;(queue.LostAPacket)</formula>
+			<formula>not E&lt;&gt; queue.LostAPacket</formula>
+			<comment></comment>
+		</query>
+		<query>
+			<formula>E&lt;&gt;deadlock</formula>
 			<comment></comment>
 		</query>
 	</queries>
