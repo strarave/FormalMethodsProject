@@ -62,7 +62,7 @@ void gridInitialization () {
 
 // Bots
 const int K = 1;
-const int nBot = 1;
+const int nBot = 10;
 typedef int[0, nBot - 1] bot_t;
 urgent chan claim[bot_t];
 meta int tmpCommunicatePodToBot[2];
@@ -73,8 +73,8 @@ urgent chan pose;
 const int maxT = 10;
 
 // Comunication Task - Queue
-const int TTask = 10;
-const int maxTask = 5;
+const int TTask = 1;
+const int maxTask = 9;
 chan newTask;
 meta int tmpPodChosenByTask[2];
 
@@ -119,6 +119,8 @@ int botPosition[2] = entryPoint;
 int positionWithoutBot = 0;
 int randomDirection;
 int preGridValue = 4; /* Variable that stores the previous state of the grid */
+int tgt[2];
+int selectedCell = 7;
 
 
 /*
@@ -137,7 +139,7 @@ int preGridValue = 4; /* Variable that stores the previous state of the grid */
     7: the spot is occupied by a bot and a claimed pod
 */
 int checkPositions(int direction){
-    int selectedCell = 7; // default condition == the most strict
+    selectedCell = 7; // default condition == the most strict
     if(direction == 0 &amp;&amp; botPosition[0] &gt; 0){
         selectedCell = grid[botPosition[0] - 1][botPosition[1]];
     }
@@ -254,7 +256,8 @@ void moveToDelivery(){
         move();
     }
     else{
-        int tgt[2] = { deliveryPoint[0] + 1, deliveryPoint[1] };
+        tgt[0] = deliveryPoint[0] + 1;
+        tgt[1] = deliveryPoint[1];
         computeMove(tgt);
         move();
     }
