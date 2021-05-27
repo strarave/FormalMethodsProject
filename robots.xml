@@ -62,7 +62,7 @@ void gridInitialization () {
 
 // Bots
 const int K = 1;
-const int nBot = 10;
+const int nBot = 1;
 typedef int[0, nBot - 1] bot_t;
 urgent chan claim[bot_t];
 meta int tmpCommunicatePodToBot[2];
@@ -74,6 +74,7 @@ const int maxT = 10;
 
 // Comunication Task - Queue
 const int TTask = 10;
+const int maxTask = 100;
 chan newTask;
 meta int tmpPodChosenByTask[2];
 
@@ -539,7 +540,7 @@ nTask++</label>
 	</template>
 	<template>
 		<name>TASK</name>
-		<parameter>int T</parameter>
+		<parameter>int T, int maxTask</parameter>
 		<declaration>/*
     This template should be used to define the evolution of a single task
     When the a new task is added the template choses the corresponding pod randomly among the available ones
@@ -554,6 +555,7 @@ clock timer;
 int avPods[n*m][2]; /*The amatrix is oversized because it considers there could be a pod for every spot of the grid. Consider adding a parameter for the total number of pods */
 int avPods_quantity = 0; /*Number of available pods*/
 int chosenPod[2];
+int taskGenerated = 0;
 
 void init_avPods () {
     int i;
@@ -597,7 +599,19 @@ void choosePod(int i) {
 			<name x="-25" y="-136">addingTask</name>
 			<committed/>
 		</location>
+		<location id="id17" x="-119" y="119">
+			<name x="-129" y="85">finished</name>
+		</location>
 		<init ref="id15"/>
+		<transition>
+			<source ref="id13"/>
+			<target ref="id17"/>
+			<label kind="guard" x="-331" y="127">taskGenerated &gt;= maxTask</label>
+			<nail x="-323" y="25"/>
+			<nail x="-323" y="119"/>
+			<nail x="-229" y="119"/>
+			<nail x="-187" y="119"/>
+		</transition>
 		<transition>
 			<source ref="id16"/>
 			<target ref="id13"/>
@@ -643,8 +657,10 @@ grid[chosenPod[0]][chosenPod[1]] = 3</label>
 		<transition>
 			<source ref="id13"/>
 			<target ref="id14"/>
-			<label kind="guard" x="-85" y="0">timer &gt;= T</label>
-			<label kind="assignment" x="-85" y="25">checkAv()</label>
+			<label kind="guard" x="-85" y="-17">timer &gt;= T &amp;&amp;
+taskGenerated &lt; maxTask</label>
+			<label kind="assignment" x="-85" y="25">checkAv(),
+taskGenerated ++</label>
 			<nail x="-178" y="25"/>
 			<nail x="102" y="25"/>
 		</transition>
@@ -659,17 +675,17 @@ grid[chosenPod[0]][chosenPod[1]] = 3</label>
 
 clock timer;
 /* Setting timer equal to  when it is not used should speed up the simulation*/</declaration>
-		<location id="id17" x="-323" y="-34">
+		<location id="id18" x="-323" y="-34">
 			<name x="-374" y="-43">free</name>
 		</location>
-		<location id="id18" x="0" y="-34">
+		<location id="id19" x="0" y="-34">
 			<name x="17" y="-51">busy</name>
 			<label kind="invariant" x="17" y="-34">timer &lt;= H</label>
 		</location>
-		<init ref="id17"/>
+		<init ref="id18"/>
 		<transition>
-			<source ref="id18"/>
-			<target ref="id17"/>
+			<source ref="id19"/>
+			<target ref="id18"/>
 			<label kind="guard" x="-212" y="-170">timer &gt;= H</label>
 			<label kind="synchronisation" x="-212" y="-153">pickUp!</label>
 			<label kind="assignment" x="-212" y="-119">timer = 0</label>
@@ -677,8 +693,8 @@ clock timer;
 			<nail x="-323" y="-119"/>
 		</transition>
 		<transition>
-			<source ref="id17"/>
-			<target ref="id18"/>
+			<source ref="id18"/>
+			<target ref="id19"/>
 			<label kind="synchronisation" x="-229" y="68">podDelivered?</label>
 			<label kind="assignment" x="-212" y="51">timer = 0</label>
 			<nail x="-323" y="51"/>
@@ -686,7 +702,7 @@ clock timer;
 		</transition>
 	</template>
 	<system>queue = QUEUE();
-task = TASK(TTask); // tasks generator
+task = TASK(TTask, maxTask); // tasks generator
 pod1 = POD();
 human  = HUMAN(H);
 system queue, task, pod1, human, BOT;</system>
