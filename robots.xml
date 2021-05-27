@@ -74,7 +74,7 @@ const int maxT = 10;
 
 // Comunication Task - Queue
 const int TTask = 10;
-const int maxTask = 100;
+const int maxTask = 10;
 chan newTask;
 meta int tmpPodChosenByTask[2];
 
@@ -356,7 +356,7 @@ timer = 0</label>
 		<transition>
 			<source ref="id8"/>
 			<target ref="id2"/>
-			<label kind="guard" x="-246" y="-340">checkArrived(entryPoint) &amp;&amp; timer == 0</label>
+			<label kind="guard" x="-246" y="-340">checkArrived(entryPoint) &amp;&amp; timer == K</label>
 			<label kind="assignment" x="-238" y="-323">timer = 0</label>
 		</transition>
 		<transition>
@@ -374,7 +374,7 @@ timer = 0</label>
 		<transition>
 			<source ref="id7"/>
 			<target ref="id8"/>
-			<label kind="guard" x="-306" y="-93">checkArrived(podPosition) &amp;&amp; timer == 0</label>
+			<label kind="guard" x="-306" y="-93">checkArrived(podPosition) &amp;&amp; timer &gt;= K</label>
 			<label kind="assignment" x="-246" y="-76">isLifting = false,
 timer = 0,
 isReturning = false</label>
@@ -414,9 +414,8 @@ timer = 0</label>
 		<transition>
 			<source ref="id5"/>
 			<target ref="id3"/>
-			<label kind="guard" x="442" y="-238">checkArrived(podPosition) &amp;&amp; timer == 0</label>
-			<label kind="assignment" x="442" y="-221">isLifting = true,
-timer = 0</label>
+			<label kind="guard" x="442" y="-238">checkArrived(podPosition) &amp;&amp; timer &gt;= K</label>
+			<label kind="assignment" x="442" y="-221">isLifting = true</label>
 		</transition>
 		<transition>
 			<source ref="id5"/>
@@ -710,6 +709,14 @@ pod1 = POD();
 human  = HUMAN(H);
 system queue, task, pod1, human, BOT;</system>
 	<queries>
+		<query>
+			<formula>A[](task.finished imply(not queue.LostAPacket))</formula>
+			<comment></comment>
+		</query>
+		<query>
+			<formula>A[](deadlock imply (task.finished))</formula>
+			<comment></comment>
+		</query>
 		<query>
 			<formula>A[] not queue.LostAPacket</formula>
 			<comment></comment>
