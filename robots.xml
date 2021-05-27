@@ -268,7 +268,7 @@ void moveTowardsStartPoint(){
 void returnPod(){
     // pod should be returned taking into account the row of pods
     // if the destination is in my reachable squares, I can go there
-    if( (botPosition[0] == podPosition[0] - 1 &amp;&amp; botPosition[1] == podPosition[1])){
+    if( (botPosition[0] == podPosition[0] + 1 &amp;&amp; botPosition[1] == podPosition[1])){
         computeMove(podPosition);
     }
     // if not, I need to reach the row first (the free row BELOW the pods row) and then the spot just before the pod's one
