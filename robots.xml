@@ -62,7 +62,7 @@ void gridInitialization () {
 
 // Bots
 const int K = 1;
-const int nBot = 2;
+const int nBot = 1;
 typedef int[0, nBot - 1] bot_t;
 urgent chan claim[bot_t];
 meta int tmpCommunicatePodToBot[2];
@@ -74,7 +74,7 @@ const int maxT = 10;
 
 // Comunication Task - Queue
 const int TTask = 10;
-const int maxTask = 10;
+const int maxTask = 5;
 chan newTask;
 meta int tmpPodChosenByTask[2];
 
@@ -358,7 +358,6 @@ timer = 0</label>
 			<target ref="id8"/>
 			<label kind="guard" x="-306" y="-93">checkArrived(podPosition) &amp;&amp; timer &gt;= K</label>
 			<label kind="assignment" x="-246" y="-76">isLifting = false,
-timer = 0,
 isReturning = false</label>
 		</transition>
 		<transition>
@@ -378,7 +377,7 @@ isReturning = true</label>
 		<transition>
 			<source ref="id3"/>
 			<target ref="id4"/>
-			<label kind="guard" x="85" y="-34">checkArrived(deliveryPoint) &amp;&amp; timer &gt;= 0</label>
+			<label kind="guard" x="85" y="-34">checkArrived(deliveryPoint) &amp;&amp; timer &gt;= K</label>
 			<label kind="synchronisation" x="196" y="-17">podDelivered!</label>
 		</transition>
 		<transition>
@@ -610,7 +609,7 @@ grid[chosenPod[0]][chosenPod[1]] = 7</label>
 		<transition>
 			<source ref="id14"/>
 			<target ref="id16"/>
-			<label kind="select" x="76" y="-153">i : int[0, 1000]</label>
+			<label kind="select" x="76" y="-153">i : int[0, 31]</label>
 			<label kind="assignment" x="76" y="-136">choosePod(i)</label>
 			<nail x="102" y="-110"/>
 		</transition>
