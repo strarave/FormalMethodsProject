@@ -62,7 +62,7 @@ void gridInitialization () {
 
 // Bots
 const int K = 1;
-const int nBot = 5;
+const int nBot = 1;
 typedef int[0, nBot - 1] bot_t;
 urgent chan claim[bot_t];
 meta int tmpCommunicatePodToBot[2];
@@ -73,8 +73,8 @@ urgent chan pose;
 const int maxT = 10;
 
 // Comunication Task - Queue
-const int TTask = 10;
-const int maxTask = 20;
+const int TTask = 100;
+const int maxTask = 10;
 chan newTask;
 meta int tmpPodChosenByTask[2];
 
@@ -117,7 +117,6 @@ int[-1, 1] moveRight;
 int podPosition[2];
 int botPosition[2] = entryPoint;
 int positionWithoutBot = 0;
-int randomDirection;
 int preGridValue = 4; /* Variable that stores the previous state of the grid */
 int tgt[2];
 int selectedCell = 7;
@@ -330,10 +329,8 @@ Going to pod position</label>
 		<transition>
 			<source ref="id8"/>
 			<target ref="id8"/>
-			<label kind="select" x="-561" y="-246">randomNumber : int[0,1]</label>
 			<label kind="guard" x="-629" y="-229">!checkArrived(entryPoint) &amp;&amp; timer &gt;= K</label>
-			<label kind="assignment" x="-561" y="-204">randomDirection = randomNumber,
-moveTowardsStartPoint(),
+			<label kind="assignment" x="-561" y="-204">moveTowardsStartPoint(),
 timer = 0</label>
 			<nail x="-382" y="-77"/>
 			<nail x="-382" y="-315"/>
@@ -347,10 +344,8 @@ timer = 0</label>
 		<transition>
 			<source ref="id7"/>
 			<target ref="id7"/>
-			<label kind="select" x="-382" y="178">randomNumber : int[0,1]</label>
 			<label kind="guard" x="-408" y="195">!checkArrived(podPosition) &amp;&amp; timer &gt;= K</label>
-			<label kind="assignment" x="-382" y="212">randomDirection = randomNumber,
-returnPod(),
+			<label kind="assignment" x="-382" y="212">returnPod(),
 timer = 0</label>
 			<nail x="-255" y="178"/>
 			<nail x="-374" y="178"/>
@@ -387,10 +382,8 @@ isReturning = true</label>
 		<transition>
 			<source ref="id3"/>
 			<target ref="id3"/>
-			<label kind="select" x="629" y="8">randomNumber : int[0,1]</label>
 			<label kind="guard" x="629" y="34">!checkArrived(deliveryPoint) &amp;&amp; timer &gt;= K</label>
-			<label kind="assignment" x="629" y="51">randomDirection = randomNumber,
-moveToDelivery(),
+			<label kind="assignment" x="629" y="51">moveToDelivery(),
 timer = 0</label>
 			<nail x="433" y="153"/>
 			<nail x="620" y="153"/>
@@ -405,10 +398,8 @@ timer = 0</label>
 		<transition>
 			<source ref="id5"/>
 			<target ref="id5"/>
-			<label kind="select" x="612" y="-544">randomNumber : int[0,1]</label>
 			<label kind="guard" x="612" y="-527">!checkArrived(podPosition) &amp;&amp; timer &gt;= K</label>
-			<label kind="assignment" x="612" y="-510">randomDirection = randomNumber,
-moveToPod(),
+			<label kind="assignment" x="612" y="-510">moveToPod(),
 timer = 0</label>
 			<nail x="433" y="-518"/>
 			<nail x="603" y="-518"/>
