@@ -358,7 +358,8 @@ timer = 0</label>
 			<target ref="id8"/>
 			<label kind="guard" x="-306" y="-93">checkArrived(podPosition) &amp;&amp; timer &gt;= K</label>
 			<label kind="assignment" x="-246" y="-76">isLifting = false,
-isReturning = false</label>
+isReturning = false,
+grid[botPosition[0]][botPosition[1]] = 6</label>
 		</transition>
 		<transition>
 			<source ref="id6"/>
