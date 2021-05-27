@@ -61,25 +61,23 @@ void gridInitialization () {
 }
 
 // Bots
-const int K = 1;
-const int nBot = 1;
+const int K = 2;
+const int nBot = 2;
 typedef int[0, nBot - 1] bot_t;
 urgent chan claim[bot_t];
-meta int tmpCommunicatePodToBot[2];
-urgent chan lift;
-urgent chan pose;
+int tmpCommunicatePodToBot[2];
 
 // Queue
-const int maxT = 10;
+const int maxT = 1;
 
 // Comunication Task - Queue
-const int TTask = 10;
-const int maxTask = 3;
+const int TTask = 100;
+const int maxTask = 4;
 chan newTask;
 meta int tmpPodChosenByTask[2];
 
 // Human
-const int H = 5;
+const int H = 40;
 chan pickUp;
 chan podDelivered;
 
