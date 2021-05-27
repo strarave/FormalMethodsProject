@@ -692,11 +692,11 @@ human  = HUMAN(H);
 system queue, task, pod1, human, BOT;</system>
 	<queries>
 		<query>
-			<formula>not E&lt;&gt; queue.LostAPacket</formula>
+			<formula>A[] not queue.LostAPacket</formula>
 			<comment></comment>
 		</query>
 		<query>
-			<formula>E&lt;&gt;deadlock</formula>
+			<formula>A[] not deadlock</formula>
 			<comment></comment>
 		</query>
 	</queries>
