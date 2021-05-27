@@ -159,36 +159,18 @@ void computeMove(int destination[2]){
     moveRight = 0;
     moveDown = 0;
 
-    if(!isReturning){ // enjoy some free movement
-        if((destination[0] - botPosition[0]) &gt; 0){
-            moveDown = checkPositions(2);
-        }
-        else if((destination[0] - botPosition[0]) &lt; 0){
-            moveDown = -checkPositions(0);
-        }
-        else { moveDown = 0; }
-     
+    // L-shaped trajectory (up/down then left/right)
+    if((destination[0] - botPosition[0]) &gt; 0){
+        moveDown = checkPositions(2);
+    }
+    else if((destination[0] - botPosition[0]) &lt; 0){
+        moveDown = -checkPositions(0);
+    } else {
         if((destination[1] - botPosition[1]) &gt; 0){
             moveRight = checkPositions(1);
         }
         else if((destination[1] - botPosition[1]) &lt; 0){
             moveRight = -checkPositions(3);
-        }
-        else { moveRight = 0; }
-    } else { 
-        // L-shaped trajectory (up/down then left/right)
-        if((destination[0] - botPosition[0]) &gt; 0){
-            moveDown = checkPositions(2);
-        }
-        else if((destination[0] - botPosition[0]) &lt; 0){
-            moveDown = -checkPositions(0);
-        } else {
-            if((destination[1] - botPosition[1]) &gt; 0){
-                moveRight = checkPositions(1);
-            }
-            else if((destination[1] - botPosition[1]) &lt; 0){
-                moveRight = -checkPositions(3);
-            }
         }
     }
 }
@@ -356,7 +338,7 @@ timer = 0</label>
 		<transition>
 			<source ref="id8"/>
 			<target ref="id2"/>
-			<label kind="guard" x="-246" y="-340">checkArrived(entryPoint) &amp;&amp; timer == K</label>
+			<label kind="guard" x="-246" y="-340">checkArrived(entryPoint) &amp;&amp; timer &gt;= K</label>
 			<label kind="assignment" x="-238" y="-323">timer = 0</label>
 		</transition>
 		<transition>
@@ -396,7 +378,7 @@ isReturning = true</label>
 		<transition>
 			<source ref="id3"/>
 			<target ref="id4"/>
-			<label kind="guard" x="85" y="-34">checkArrived(deliveryPoint) &amp;&amp; timer == 0</label>
+			<label kind="guard" x="85" y="-34">checkArrived(deliveryPoint) &amp;&amp; timer &gt;= 0</label>
 			<label kind="synchronisation" x="196" y="-17">podDelivered!</label>
 		</transition>
 		<transition>
