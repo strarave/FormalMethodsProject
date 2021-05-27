@@ -194,8 +194,9 @@ void move(){
             }
         }
         
-        if (moveRight != 0) botPosition[1] += moveRight;
-        else if(moveDown != 0)  botPosition[0] += moveDown;
+        if(moveDown != 0)  botPosition[0] += moveDown;
+        else if (moveRight != 0) botPosition[1] += moveRight;
+        
     }
 
     // update the grid
@@ -291,23 +292,28 @@ Waiting for human to complete task</label>
 			<label kind="comments" x="450" y="-391">Task claimed
 Going to pod position</label>
 		</location>
-		<location id="id4" x="85" y="-425">
-			<name x="34" y="-459">waitingForPosition</name>
-			<committed/>
-		</location>
-		<location id="id5" x="-255" y="17">
+		<location id="id4" x="-255" y="17">
 			<name x="-348" y="-17">podReturn</name>
 			<label kind="invariant" x="-348" y="0">timer &lt;= K</label>
 			<label kind="comments" x="-442" y="-42">Returning to pod position</label>
 		</location>
-		<location id="id6" x="-255" y="-204">
+		<location id="id5" x="-255" y="-204">
 			<name x="-238" y="-213">returnToStartPoint</name>
 			<label kind="invariant" x="-238" y="-195">timer &lt;= K</label>
 		</location>
 		<init ref="id0"/>
 		<transition>
-			<source ref="id6"/>
-			<target ref="id6"/>
+			<source ref="id0"/>
+			<target ref="id3"/>
+			<label kind="synchronisation" x="68" y="-510">claim[ID]!</label>
+			<label kind="assignment" x="68" y="-493">setPodPosition(),
+timer = 0,
+isReturning = false</label>
+			<nail x="93" y="-425"/>
+		</transition>
+		<transition>
+			<source ref="id5"/>
+			<target ref="id5"/>
 			<label kind="guard" x="-629" y="-229">!checkArrived(entryPoint) &amp;&amp; timer &gt;= K</label>
 			<label kind="assignment" x="-561" y="-204">moveTowardsStartPoint(),
 timer = 0</label>
@@ -315,14 +321,14 @@ timer = 0</label>
 			<nail x="-382" y="-315"/>
 		</transition>
 		<transition>
-			<source ref="id6"/>
+			<source ref="id5"/>
 			<target ref="id0"/>
 			<label kind="guard" x="-246" y="-340">checkArrived(entryPoint) &amp;&amp; timer &gt;= K</label>
 			<label kind="assignment" x="-238" y="-323">timer = 0</label>
 		</transition>
 		<transition>
-			<source ref="id5"/>
-			<target ref="id5"/>
+			<source ref="id4"/>
+			<target ref="id4"/>
 			<label kind="guard" x="-408" y="195">!checkArrived(podPosition) &amp;&amp; timer &gt;= K</label>
 			<label kind="assignment" x="-382" y="212">returnPod(),
 timer = 0</label>
@@ -331,23 +337,16 @@ timer = 0</label>
 			<nail x="-374" y="17"/>
 		</transition>
 		<transition>
-			<source ref="id5"/>
-			<target ref="id6"/>
-			<label kind="guard" x="-246" y="-93">checkArrived(podPosition) &amp;&amp; timer &gt;= K</label>
+			<source ref="id4"/>
+			<target ref="id5"/>
+			<label kind="guard" x="-306" y="-93">checkArrived(podPosition) &amp;&amp; timer &gt;= K</label>
 			<label kind="assignment" x="-246" y="-76">isLifting = false,
 isReturning = false,
 grid[botPosition[0]][botPosition[1]] = 6</label>
 		</transition>
 		<transition>
-			<source ref="id4"/>
-			<target ref="id3"/>
-			<label kind="assignment" x="195" y="-450">setPodPosition(),
-timer = 0,
-isReturning = false</label>
-		</transition>
-		<transition>
 			<source ref="id2"/>
-			<target ref="id5"/>
+			<target ref="id4"/>
 			<label kind="synchronisation" x="-102" y="17">pickUp?</label>
 			<label kind="assignment" x="-102" y="34">timer = 0,
 isReturning = true</label>
@@ -383,11 +382,6 @@ timer = 0</label>
 			<nail x="433" y="-518"/>
 			<nail x="603" y="-518"/>
 			<nail x="603" y="-425"/>
-		</transition>
-		<transition>
-			<source ref="id0"/>
-			<target ref="id4"/>
-			<label kind="synchronisation" x="-136" y="-450">claim[ID]!</label>
 		</transition>
 	</template>
 	<template>
@@ -428,20 +422,20 @@ void pop() {
         else {queueList[j][0] = -1; queueList[j][1] = -1;}
     }
 }</declaration>
-		<location id="id7" x="-425" y="8">
+		<location id="id6" x="-425" y="8">
 			<name x="-435" y="-26">start</name>
 			<committed/>
 		</location>
-		<location id="id8" x="-161" y="8">
+		<location id="id7" x="-161" y="8">
 			<name x="-229" y="17">Working</name>
 		</location>
-		<location id="id9" x="229" y="8">
+		<location id="id8" x="229" y="8">
 			<name x="219" y="-26">LostAPacket</name>
 		</location>
-		<init ref="id7"/>
+		<init ref="id6"/>
 		<transition>
-			<source ref="id8"/>
-			<target ref="id8"/>
+			<source ref="id7"/>
+			<target ref="id7"/>
 			<label kind="select" x="-153" y="-187">i : int[0, nBot-1]</label>
 			<label kind="guard" x="-153" y="-170">nTask &gt; 0</label>
 			<label kind="synchronisation" x="-153" y="-153">claim[i]?</label>
@@ -451,14 +445,14 @@ tmpCommunicatePodToBot = queueList[0]</label>
 			<nail x="42" y="-94"/>
 		</transition>
 		<transition>
-			<source ref="id8"/>
-			<target ref="id9"/>
+			<source ref="id7"/>
+			<target ref="id8"/>
 			<label kind="guard" x="59" y="24">nTask &gt;= maxT</label>
 			<label kind="synchronisation" x="59" y="8">newTask?</label>
 		</transition>
 		<transition>
-			<source ref="id8"/>
-			<target ref="id8"/>
+			<source ref="id7"/>
+			<target ref="id7"/>
 			<label kind="guard" x="-153" y="161">nTask &lt; maxT</label>
 			<label kind="synchronisation" x="-153" y="110">newTask?</label>
 			<label kind="assignment" x="-153" y="127">append(tmpPodChosenByTask), 
@@ -467,8 +461,8 @@ nTask++, tmpCommunicatePodToBot = queueList[0]</label>
 			<nail x="42" y="110"/>
 		</transition>
 		<transition>
-			<source ref="id7"/>
-			<target ref="id8"/>
+			<source ref="id6"/>
+			<target ref="id7"/>
 			<label kind="assignment" x="-357" y="8">initQueue(),
 gridInitialization()</label>
 		</transition>
@@ -516,25 +510,25 @@ void choosePod(int i) {
     int chosen =  i % avPods_quantity;
     chosenPod = avPods[chosen];
 }</declaration>
-		<location id="id10" x="-178" y="-42">
+		<location id="id9" x="-178" y="-42">
 			<name x="-153" y="-42">idle</name>
 			<label kind="invariant" x="-161" y="-25">timer &lt;= T</label>
 		</location>
-		<location id="id11" x="-578" y="-42">
+		<location id="id10" x="-578" y="-42">
 			<name x="-588" y="-76">startingTask</name>
 			<committed/>
 		</location>
-		<location id="id12" x="93" y="-382">
+		<location id="id11" x="93" y="-382">
 			<name x="110" y="-408">addingTask</name>
 			<committed/>
 		</location>
-		<location id="id13" x="-119" y="119">
+		<location id="id12" x="-119" y="119">
 			<name x="-129" y="85">finished</name>
 		</location>
-		<init ref="id11"/>
+		<init ref="id10"/>
 		<transition>
-			<source ref="id10"/>
-			<target ref="id13"/>
+			<source ref="id9"/>
+			<target ref="id12"/>
 			<label kind="guard" x="-331" y="127">maxTask == 0</label>
 			<label kind="assignment" x="-331" y="144">timer = 0</label>
 			<nail x="-323" y="25"/>
@@ -543,8 +537,8 @@ void choosePod(int i) {
 			<nail x="-187" y="119"/>
 		</transition>
 		<transition>
-			<source ref="id12"/>
-			<target ref="id10"/>
+			<source ref="id11"/>
+			<target ref="id9"/>
 			<label kind="guard" x="-229" y="-501">chosenPod[0] != -1</label>
 			<label kind="synchronisation" x="-229" y="-518">newTask!</label>
 			<label kind="assignment" x="-229" y="-484">init_avPods(), timer = 0,
@@ -555,21 +549,21 @@ chosenPod[0] = 0, chosenPod[1] = 0</label>
 			<nail x="-178" y="-382"/>
 		</transition>
 		<transition>
-			<source ref="id12"/>
-			<target ref="id10"/>
+			<source ref="id11"/>
+			<target ref="id9"/>
 			<label kind="guard" x="0" y="-246">chosenPod[0] == -1</label>
 			<label kind="assignment" x="-25" y="-229">init_avPods(), timer = 0,
 avPods_quantity = 0, 
 chosenPod[0] = 0, chosenPod[1] = 0</label>
 		</transition>
 		<transition>
-			<source ref="id11"/>
-			<target ref="id10"/>
+			<source ref="id10"/>
+			<target ref="id9"/>
 			<label kind="assignment" x="-501" y="-42">timer = 0, init_avPods()</label>
 		</transition>
 		<transition>
-			<source ref="id10"/>
-			<target ref="id12"/>
+			<source ref="id9"/>
+			<target ref="id11"/>
 			<label kind="select" x="76" y="-34">i: int[0,31]</label>
 			<label kind="guard" x="76" y="-17">timer &gt;= T &amp;&amp;
 maxTask &gt; 0</label>
@@ -591,17 +585,17 @@ choosePod(i)</label>
 
 clock timer;
 /* Setting timer equal to  when it is not used should speed up the simulation*/</declaration>
-		<location id="id14" x="-323" y="-34">
+		<location id="id13" x="-323" y="-34">
 			<name x="-374" y="-43">free</name>
 		</location>
-		<location id="id15" x="0" y="-34">
+		<location id="id14" x="0" y="-34">
 			<name x="17" y="-51">busy</name>
 			<label kind="invariant" x="17" y="-34">timer &lt;= H</label>
 		</location>
-		<init ref="id14"/>
+		<init ref="id13"/>
 		<transition>
-			<source ref="id15"/>
-			<target ref="id14"/>
+			<source ref="id14"/>
+			<target ref="id13"/>
 			<label kind="guard" x="-212" y="-170">timer &gt;= H</label>
 			<label kind="synchronisation" x="-212" y="-153">pickUp!</label>
 			<label kind="assignment" x="-212" y="-119">timer = 0</label>
@@ -609,8 +603,8 @@ clock timer;
 			<nail x="-323" y="-119"/>
 		</transition>
 		<transition>
-			<source ref="id14"/>
-			<target ref="id15"/>
+			<source ref="id13"/>
+			<target ref="id14"/>
 			<label kind="synchronisation" x="-229" y="68">podDelivered?</label>
 			<label kind="assignment" x="-212" y="51">timer = 0</label>
 			<nail x="-323" y="51"/>
