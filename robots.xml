@@ -62,7 +62,7 @@ void gridInitialization () {
 
 // Bots
 const int K = 1;
-const int nBot = 10;
+const int nBot = 5;
 typedef int[0, nBot - 1] bot_t;
 urgent chan claim[bot_t];
 meta int tmpCommunicatePodToBot[2];
@@ -73,13 +73,13 @@ urgent chan pose;
 const int maxT = 10;
 
 // Comunication Task - Queue
-const int TTask = 1;
-const int maxTask = 9;
+const int TTask = 10;
+const int maxTask = 20;
 chan newTask;
 meta int tmpPodChosenByTask[2];
 
 // Human
-const int H = 20;
+const int H = 5;
 chan pickUp;
 chan podDelivered;
 
@@ -216,8 +216,8 @@ void move(){
             }
         }
         
-        if(moveDown != 0)  botPosition[0] += moveDown;
-        else if (moveRight != 0) botPosition[1] += moveRight;
+        if (moveRight != 0) botPosition[1] += moveRight;
+        else if(moveDown != 0)  botPosition[0] += moveDown;
     }
 
     // update the grid
