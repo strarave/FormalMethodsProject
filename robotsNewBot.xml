@@ -72,22 +72,22 @@ void gridInitialization () {
 
 // Bots
 const int K = 2;
-const int nBot = 1;
+const int nBot = 3;
 typedef int[0, nBot - 1] bot_t;
 urgent chan claim[bot_t];
 int tmpCommunicatePodToBot[2];
 
 // Queue
-const int maxT = 20;
+const int maxT = 5;
 
 // Comunication Task - Queue
-const int TTask = 10;
-const int maxTask = 3;
+const int TTask = 30;
+const int maxTask = 50;
 chan newTask;
 meta int tmpPodChosenByTask[2];
 
 // Human
-const int H = 5;
+const int H = 20;
 chan pickUp;
 chan podDelivered;</declaration>
 	<template>
@@ -101,7 +101,7 @@ int podPosition[2];
 int botPosition[2] = entryPoint;
 int[0, 7] preGridValue = 4; /* Variable that stores the previous state of the grid */
 int[0, 7] selectedCell = 7;
-int[0, 3] waiting = 0;
+int[0, 2] waiting = 0;
 
 
 int[0, 3] strategy = 0; 
@@ -243,17 +243,25 @@ bool checkArrived(int destination[2]) {
 
 // FROM ENTRY TO POD POSITION
 void entryToPod() {
-    moveDown = 0;
-    moveRight = 0;
-    if (botPosition[0] &gt; podPosition[0]) {
+    moveDown = -checkPositions(0) * (botPosition[0] &gt; podPosition[0]);
+    /*moveRight = 0;*/
+
+    if (botPosition[0] &gt;= 2) {
+        moveDown *= !(grid[botPosition[0]-2][botPosition[1]] == 7 ||grid[botPosition[0]-2][botPosition[1]+1] == 7);
+    }
+
+    /*if (botPosition[0] &gt; podPosition[0]) {
         moveDown = -checkPositions(0);
         if (botPosition[0] &gt;= 2) {
             if (grid[botPosition[0]-2][botPosition[1]] == 7 ||grid[botPosition[0]-2][botPosition[1]+1] == 7) {moveDown = 0;}
         }
-    }
-    else if (botPosition[1] &lt; podPosition[1]) {
+    }*/
+
+    moveRight = checkPositions(1) * ((botPosition[1] &lt; podPosition[1]) &amp;&amp; moveDown == 0);
+
+    /*else if (botPosition[1] &lt; podPosition[1]) {
         moveRight = checkPositions(1);
-    }
+    }*/
     move();
 }
 
@@ -312,9 +320,9 @@ void podToEntry() {
 
     if (moveDown == 0 &amp;&amp; moveRight == 0) {
         waiting ++;
-        moveRight = -checkPositions(3)*(waiting == 3);
+        moveRight = -checkPositions(3)*(waiting == 2);
         moveRight += checkPositions(1)*(moveRight==0);
-        waiting -= 3*(waiting==3);
+        waiting -= 2*(waiting==2);
     }
     move();
 }
@@ -535,44 +543,15 @@ void choosePod(int i) {
 			<name x="-562" y="-204">startingTask</name>
 			<committed/>
 		</location>
-		<location id="id9" x="314" y="-170">
-			<name x="331" y="-196">addingTask</name>
-			<committed/>
-		</location>
-		<location id="id10" x="-119" y="119">
-			<name x="-129" y="85">finished</name>
+		<location id="id9" x="-178" y="-425">
+			<name x="-188" y="-459">finished</name>
 		</location>
 		<init ref="id8"/>
 		<transition>
 			<source ref="id7"/>
-			<target ref="id10"/>
-			<label kind="guard" x="-331" y="127">maxTask == 0</label>
-			<label kind="assignment" x="-331" y="144">timer = 0</label>
-			<nail x="-323" y="25"/>
-			<nail x="-323" y="119"/>
-			<nail x="-229" y="119"/>
-			<nail x="-187" y="119"/>
-		</transition>
-		<transition>
-			<source ref="id9"/>
-			<target ref="id7"/>
-			<label kind="guard" x="-68" y="-493">chosenPod[0] != -1</label>
-			<label kind="synchronisation" x="-68" y="-510">newTask!</label>
-			<label kind="assignment" x="-68" y="-476">init_avPods(), timer = 0,
-tmpPodChosenByTask = chosenPod,
-grid[chosenPod[0]][chosenPod[1]]++,
-avPods_quantity = 0, 
-chosenPod[0] = 0, chosenPod[1] = 0</label>
-			<nail x="314" y="-374"/>
-			<nail x="-178" y="-374"/>
-		</transition>
-		<transition>
-			<source ref="id9"/>
-			<target ref="id7"/>
-			<label kind="guard" x="-25" y="-246">chosenPod[0] == -1</label>
-			<label kind="assignment" x="-25" y="-229">init_avPods(), timer = 0,
-avPods_quantity = 0, 
-chosenPod[0] = 0, chosenPod[1] = 0</label>
+			<target ref="id9"/>
+			<label kind="guard" x="-161" y="-340">maxTask == 0</label>
+			<label kind="assignment" x="-161" y="-323">timer = 0</label>
 		</transition>
 		<transition>
 			<source ref="id8"/>
@@ -581,15 +560,22 @@ chosenPod[0] = 0, chosenPod[1] = 0</label>
 		</transition>
 		<transition>
 			<source ref="id7"/>
-			<target ref="id9"/>
-			<label kind="select" x="34" y="-34">i: int[0,podCounter]</label>
-			<label kind="guard" x="34" y="-17">timer &gt;= T &amp;&amp;
+			<target ref="id7"/>
+			<label kind="select" x="51" y="-170">i: int[0,0]</label>
+			<label kind="guard" x="51" y="-153">timer &gt;= T &amp;&amp;
 maxTask &gt; 0</label>
-			<label kind="assignment" x="34" y="25">checkAv(),
+			<label kind="synchronisation" x="51" y="-187">newTask!</label>
+			<label kind="assignment" x="51" y="-111">checkAv(),
 maxTask--,
-choosePod(i)</label>
+choosePod(i),
+init_avPods(), timer = 0,
+tmpPodChosenByTask = chosenPod,
+grid[chosenPod[0]][chosenPod[1]]++,
+avPods_quantity = 0, 
+chosenPod[0] = 0, chosenPod[1] = 0</label>
 			<nail x="-178" y="25"/>
-			<nail x="314" y="25"/>
+			<nail x="25" y="25"/>
+			<nail x="25" y="-170"/>
 		</transition>
 	</template>
 	<template>
@@ -602,17 +588,17 @@ choosePod(i)</label>
 
 clock timer;
 /* Setting timer equal to  when it is not used should speed up the simulation*/</declaration>
-		<location id="id11" x="-323" y="-34">
+		<location id="id10" x="-323" y="-34">
 			<name x="-374" y="-43">free</name>
 		</location>
-		<location id="id12" x="0" y="-34">
+		<location id="id11" x="0" y="-34">
 			<name x="17" y="-51">busy</name>
 			<label kind="invariant" x="17" y="-34">timer &lt;= H</label>
 		</location>
-		<init ref="id11"/>
+		<init ref="id10"/>
 		<transition>
-			<source ref="id12"/>
-			<target ref="id11"/>
+			<source ref="id11"/>
+			<target ref="id10"/>
 			<label kind="guard" x="-212" y="-170">timer &gt;= H</label>
 			<label kind="synchronisation" x="-212" y="-153">pickUp!</label>
 			<label kind="assignment" x="-212" y="-119">timer = 0</label>
@@ -620,8 +606,8 @@ clock timer;
 			<nail x="-323" y="-119"/>
 		</transition>
 		<transition>
-			<source ref="id11"/>
-			<target ref="id12"/>
+			<source ref="id10"/>
+			<target ref="id11"/>
 			<label kind="synchronisation" x="-229" y="68">podDelivered?</label>
 			<label kind="assignment" x="-212" y="51">timer = 0</label>
 			<nail x="-323" y="51"/>
