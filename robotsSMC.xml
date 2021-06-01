@@ -82,7 +82,7 @@ int tmpCommunicatePodToBot[2];
 
 // Queue
 const int maxT = 3;
-int[0, maxT] nTask = 0;
+int nTask = 0;
 
 // Comunication Task - Queue
 const int TTask = 20;
@@ -474,9 +474,6 @@ void pop() {
 		<location id="id5" x="-161" y="8">
 			<name x="-229" y="17">Working</name>
 		</location>
-		<location id="id6" x="229" y="8">
-			<name x="219" y="-26">LostAPacket</name>
-		</location>
 		<init ref="id4"/>
 		<transition>
 			<source ref="id5"/>
@@ -491,14 +488,7 @@ tmpCommunicatePodToBot = queueList[0]</label>
 		</transition>
 		<transition>
 			<source ref="id5"/>
-			<target ref="id6"/>
-			<label kind="guard" x="59" y="24">nTask &gt;= maxT</label>
-			<label kind="synchronisation" x="59" y="8">newTask?</label>
-		</transition>
-		<transition>
-			<source ref="id5"/>
 			<target ref="id5"/>
-			<label kind="guard" x="-153" y="161">nTask &lt; maxT</label>
 			<label kind="synchronisation" x="-153" y="110">newTask?</label>
 			<label kind="assignment" x="-153" y="127">append(tmpPodChosenByTask), 
 nTask++, tmpCommunicatePodToBot = queueList[0]</label>
@@ -559,24 +549,24 @@ void choosePod(int i) {
 double f() {
     return Normal(muT, sigmaT);
 }</declaration>
-		<location id="id7" x="-178" y="-170">
+		<location id="id6" x="-178" y="-170">
 			<name x="-153" y="-170">idle</name>
 			<label kind="invariant" x="-161" y="-153">timer &lt;= delayTask</label>
 		</location>
-		<location id="id8" x="-552" y="-170">
+		<location id="id7" x="-552" y="-170">
 			<name x="-562" y="-204">startingTask</name>
 			<committed/>
 		</location>
-		<init ref="id8"/>
+		<init ref="id7"/>
 		<transition>
-			<source ref="id8"/>
-			<target ref="id7"/>
+			<source ref="id7"/>
+			<target ref="id6"/>
 			<label kind="assignment" x="-459" y="-187">timer = 0, init_avPods(),
 delayTask = f()</label>
 		</transition>
 		<transition>
-			<source ref="id7"/>
-			<target ref="id7"/>
+			<source ref="id6"/>
+			<target ref="id6"/>
 			<label kind="select" x="42" y="-160">i: int[0,podCounter]</label>
 			<label kind="guard" x="42" y="-143">timer == delayTask</label>
 			<label kind="synchronisation" x="42" y="-177">newTask!</label>
@@ -608,17 +598,17 @@ double delayHuman;
 double f() {
     return Normal(muH, sigmaH);
 }</declaration>
-		<location id="id9" x="-323" y="-34">
+		<location id="id8" x="-323" y="-34">
 			<name x="-374" y="-43">free</name>
 		</location>
-		<location id="id10" x="0" y="-34">
+		<location id="id9" x="0" y="-34">
 			<name x="17" y="-51">busy</name>
 			<label kind="invariant" x="17" y="-34">timer &lt;= delayHuman</label>
 		</location>
-		<init ref="id9"/>
+		<init ref="id8"/>
 		<transition>
-			<source ref="id10"/>
-			<target ref="id9"/>
+			<source ref="id9"/>
+			<target ref="id8"/>
 			<label kind="guard" x="-212" y="-170">timer == delayHuman</label>
 			<label kind="synchronisation" x="-212" y="-153">pickUp!</label>
 			<label kind="assignment" x="-212" y="-119">timer = 0</label>
@@ -626,8 +616,8 @@ double f() {
 			<nail x="-323" y="-119"/>
 		</transition>
 		<transition>
-			<source ref="id9"/>
-			<target ref="id10"/>
+			<source ref="id8"/>
+			<target ref="id9"/>
 			<label kind="synchronisation" x="-229" y="59">podDelivered?</label>
 			<label kind="assignment" x="-229" y="76">timer = 0,
 delayHuman = f()</label>
@@ -636,17 +626,17 @@ delayHuman = f()</label>
 		</transition>
 	</template>
 	<system>queue = QUEUE();
-task = TASK(15.0, 10.0); // tasks generator
-human  = HUMAN(20.0, 3.0);
+task = TASK(20.0, 5.0); // tasks generator
+human  = HUMAN(50.0, 3.0);
 system queue, task, human, BOT;
 progress {prog;}</system>
 	<queries>
 		<query>
-			<formula>simulate[&lt;= 1000;1]{queue.LostAPacket, nTask, task.delayTask, task.muT, TTask, BOT(0).idle}</formula>
+			<formula>simulate[&lt;= 1000;1]{nTask, task.delayTask, BOT(0).idle}</formula>
 			<comment></comment>
 		</query>
 		<query>
-			<formula>Pr[&lt;=1000](&lt;&gt;queue.LostAPacket)</formula>
+			<formula>Pr[&lt;=500](&lt;&gt;(nTask &gt; maxT))</formula>
 			<comment></comment>
 		</query>
 	</queries>
