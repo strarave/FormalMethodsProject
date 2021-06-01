@@ -44,6 +44,8 @@ const int entryPoint[2] = {9, 0};
 const int deliveryPoint[2] = {0, 9};
 int[0,7] grid[n][m];
 
+int prog = 0;
+
 //Calculate greatest dimension                                     DOES NOT WORK
 /*int max(int n, int m) {
     if (n &gt;= m) return n;
@@ -71,18 +73,18 @@ void gridInitialization () {
 }
 
 // Bots
-const int K = 2;
-const int nBot = 2;
-typedef int[0, nBot - 1] bot_t;
-urgent chan claim[bot_t];
+const int K = 1;
+const int nBot = 3;
+typedef scalar[nBot] bot_t;
+urgent chan claim;
 int tmpCommunicatePodToBot[2];
 
 // Queue
-const int maxT = 1;
+const int maxT = 5;
 
 // Comunication Task - Queue
-const int TTask = 50;
-const int maxTask = 4;
+const int TTask = 1;
+const int maxTask = 5;
 chan newTask;
 meta int tmpPodChosenByTask[2];
 
@@ -387,7 +389,7 @@ timer = 0</label>
 		<transition>
 			<source ref="id0"/>
 			<target ref="id1"/>
-			<label kind="synchronisation" x="1513" y="-493">claim[ID]!</label>
+			<label kind="synchronisation" x="1513" y="-493">claim!</label>
 			<label kind="assignment" x="1513" y="-476">setPodPosition(),
 timer = 0</label>
 			<nail x="1619" y="-425"/>
@@ -397,7 +399,8 @@ timer = 0</label>
 			<target ref="id0"/>
 			<label kind="guard" x="1280" y="-340">checkArrived(entryPoint) &amp;&amp; timer &gt;= K</label>
 			<label kind="assignment" x="1283" y="-323">timer = 0,
-strategy = 0</label>
+strategy = 0,
+prog ++</label>
 		</transition>
 		<transition>
 			<source ref="id2"/>
@@ -464,9 +467,8 @@ void pop() {
 		<transition>
 			<source ref="id5"/>
 			<target ref="id5"/>
-			<label kind="select" x="-153" y="-187">i : int[0, nBot-1]</label>
 			<label kind="guard" x="-153" y="-170">nTask &gt; 0</label>
-			<label kind="synchronisation" x="-153" y="-153">claim[i]?</label>
+			<label kind="synchronisation" x="-153" y="-153">claim?</label>
 			<label kind="assignment" x="-153" y="-136">pop() ,nTask--,
 tmpCommunicatePodToBot = queueList[0]</label>
 			<nail x="-161" y="-94"/>
@@ -619,7 +621,8 @@ clock timer;
 	<system>queue = QUEUE();
 task = TASK(TTask, maxTask); // tasks generator
 human  = HUMAN(H);
-system queue, task, human, BOT;</system>
+system queue, task, human, BOT;
+progress {prog;}</system>
 	<queries>
 		<query>
 			<formula>A[] not queue.LostAPacket</formula>

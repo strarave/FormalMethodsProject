@@ -44,6 +44,8 @@ const int entryPoint[2] = {9, 0};
 const int deliveryPoint[2] = {0, 9};
 int[0,7] grid[n][m];
 
+int prog = 0;
+
 //Calculate greatest dimension                                     DOES NOT WORK
 /*int max(int n, int m) {
     if (n &gt;= m) return n;
@@ -71,25 +73,37 @@ void gridInitialization () {
 }
 
 // Bots
-const int K = 2;
-const int nBot = 2;
-typedef int[0, nBot - 1] bot_t;
-urgent chan claim[bot_t];
+const int K = 1;
+const int nBot = 5;
+double lambdaBot = 2.3;
+typedef int[0, nBot-1] bot_t;
+broadcast chan claim[bot_t];
 int tmpCommunicatePodToBot[2];
 
 // Queue
-const int maxT = 1;
+const int maxT = 3;
+int[0, maxT] nTask = 0;
 
 // Comunication Task - Queue
-const int TTask = 50;
-const int maxTask = 4;
-chan newTask;
+const int TTask = 20;
+broadcast chan newTask;
 meta int tmpPodChosenByTask[2];
 
 // Human
 const int H = 10;
-chan pickUp;
-chan podDelivered;</declaration>
+broadcast chan pickUp;
+broadcast chan podDelivered;
+
+// SMC
+const double PI = 3.14159265358979323846;
+
+double stdNormal() {
+    return sqrt(-2*ln(1-random(1)))*cos(2*PI*random(1));
+}
+
+double Normal(double mean, double stdDev) {
+    return mean + stdDev * stdNormal();
+}</declaration>
 	<template>
 		<name>BOT</name>
 		<parameter>bot_t ID</parameter>
@@ -350,7 +364,8 @@ void chooseStrategy() {
 
 }</declaration>
 		<location id="id0" x="1275" y="-425">
-			<name x="1265" y="-459">idle</name>
+			<name x="1190" y="-450">idle</name>
+			<label kind="exponentialrate" x="1190" y="-433">lambdaBot</label>
 		</location>
 		<location id="id1" x="1844" y="-425">
 			<name x="1861" y="-425">claimed</name>
@@ -387,6 +402,7 @@ timer = 0</label>
 		<transition>
 			<source ref="id0"/>
 			<target ref="id1"/>
+			<label kind="guard" x="1513" y="-510">nTask &gt; 0</label>
 			<label kind="synchronisation" x="1513" y="-493">claim[ID]!</label>
 			<label kind="assignment" x="1513" y="-476">setPodPosition(),
 timer = 0</label>
@@ -397,7 +413,8 @@ timer = 0</label>
 			<target ref="id0"/>
 			<label kind="guard" x="1280" y="-340">checkArrived(entryPoint) &amp;&amp; timer &gt;= K</label>
 			<label kind="assignment" x="1283" y="-323">timer = 0,
-strategy = 0</label>
+strategy = 0,
+prog ++</label>
 		</transition>
 		<transition>
 			<source ref="id2"/>
@@ -424,7 +441,7 @@ strategy ++</label>
     The temporary variable tmpPodChosenByTask is used to receive the pod chosen by the task template and append it to queueList
 */
 
-int[0, maxT] nTask = 0;
+
 int queueList[maxT][2];
 
 
@@ -464,7 +481,7 @@ void pop() {
 		<transition>
 			<source ref="id5"/>
 			<target ref="id5"/>
-			<label kind="select" x="-153" y="-187">i : int[0, nBot-1]</label>
+			<label kind="select" x="-153" y="-187">i : bot_t</label>
 			<label kind="guard" x="-153" y="-170">nTask &gt; 0</label>
 			<label kind="synchronisation" x="-153" y="-153">claim[i]?</label>
 			<label kind="assignment" x="-153" y="-136">pop() ,nTask--,
@@ -497,7 +514,7 @@ gridInitialization()</label>
 	</template>
 	<template>
 		<name>TASK</name>
-		<parameter>int T, int maxTask</parameter>
+		<parameter> double muT, double sigmaT</parameter>
 		<declaration>/*
     This template should be used to define the evolution of a single task
     When the a new task is added the template choses the corresponding pod randomly among the available ones
@@ -512,6 +529,7 @@ clock timer;
 int avPods[podCounter][2]; /*The amatrix is oversized because it considers there could be a pod for every spot of the grid. Consider adding a parameter for the total number of pods */
 int[0, podCounter] avPods_quantity = 0; /*Number of available pods*/
 int chosenPod[2];
+double delayTask;
 
 void init_avPods () {
     int i;
@@ -536,45 +554,40 @@ void checkAv () { /*Function to check which pods are available*/
 
 void choosePod(int i) {
     chosenPod = avPods[i % avPods_quantity];
+}
+
+double f() {
+    return Normal(muT, sigmaT);
 }</declaration>
 		<location id="id7" x="-178" y="-170">
 			<name x="-153" y="-170">idle</name>
-			<label kind="invariant" x="-161" y="-153">timer &lt;= T</label>
+			<label kind="invariant" x="-161" y="-153">timer &lt;= delayTask</label>
 		</location>
 		<location id="id8" x="-552" y="-170">
 			<name x="-562" y="-204">startingTask</name>
 			<committed/>
 		</location>
-		<location id="id9" x="-178" y="-425">
-			<name x="-188" y="-459">finished</name>
-		</location>
 		<init ref="id8"/>
-		<transition>
-			<source ref="id7"/>
-			<target ref="id9"/>
-			<label kind="guard" x="-161" y="-340">maxTask == 0</label>
-			<label kind="assignment" x="-161" y="-323">timer = 0</label>
-		</transition>
 		<transition>
 			<source ref="id8"/>
 			<target ref="id7"/>
-			<label kind="assignment" x="-459" y="-195">timer = 0, init_avPods()</label>
+			<label kind="assignment" x="-459" y="-187">timer = 0, init_avPods(),
+delayTask = f()</label>
 		</transition>
 		<transition>
 			<source ref="id7"/>
 			<target ref="id7"/>
-			<label kind="select" x="51" y="-170">i: int[0,podCounter]</label>
-			<label kind="guard" x="51" y="-153">timer &gt;= T &amp;&amp;
-maxTask &gt; 0</label>
-			<label kind="synchronisation" x="51" y="-187">newTask!</label>
-			<label kind="assignment" x="51" y="-111">checkAv(),
-maxTask--,
+			<label kind="select" x="42" y="-160">i: int[0,podCounter]</label>
+			<label kind="guard" x="42" y="-143">timer == delayTask</label>
+			<label kind="synchronisation" x="42" y="-177">newTask!</label>
+			<label kind="assignment" x="42" y="-127">checkAv(),
 choosePod(i),
 init_avPods(), timer = 0,
 tmpPodChosenByTask = chosenPod,
 grid[chosenPod[0]][chosenPod[1]]++,
 avPods_quantity = 0, 
-chosenPod[0] = 0, chosenPod[1] = 0</label>
+chosenPod[0] = 0, chosenPod[1] = 0,
+delayTask = f()</label>
 			<nail x="-178" y="25"/>
 			<nail x="25" y="25"/>
 			<nail x="25" y="-170"/>
@@ -582,47 +595,58 @@ chosenPod[0] = 0, chosenPod[1] = 0</label>
 	</template>
 	<template>
 		<name>HUMAN</name>
-		<parameter>int H</parameter>
+		<parameter>double muH, double sigmaH</parameter>
 		<declaration>/* 
     The human operator waits for a pod that communicates that a pod has been delivered.
     After receiveing the message he stays in busy for H seconds and after that communicates to the robot it is free to go
 */
 
 clock timer;
-/* Setting timer equal to  when it is not used should speed up the simulation*/</declaration>
-		<location id="id10" x="-323" y="-34">
+/* Setting timer equal to  when it is not used should speed up the simulation*/
+
+double delayHuman;
+double f() {
+    return Normal(muH, sigmaH);
+}</declaration>
+		<location id="id9" x="-323" y="-34">
 			<name x="-374" y="-43">free</name>
 		</location>
-		<location id="id11" x="0" y="-34">
+		<location id="id10" x="0" y="-34">
 			<name x="17" y="-51">busy</name>
-			<label kind="invariant" x="17" y="-34">timer &lt;= H</label>
+			<label kind="invariant" x="17" y="-34">timer &lt;= delayHuman</label>
 		</location>
-		<init ref="id10"/>
+		<init ref="id9"/>
 		<transition>
-			<source ref="id11"/>
-			<target ref="id10"/>
-			<label kind="guard" x="-212" y="-170">timer &gt;= H</label>
+			<source ref="id10"/>
+			<target ref="id9"/>
+			<label kind="guard" x="-212" y="-170">timer == delayHuman</label>
 			<label kind="synchronisation" x="-212" y="-153">pickUp!</label>
 			<label kind="assignment" x="-212" y="-119">timer = 0</label>
 			<nail x="0" y="-119"/>
 			<nail x="-323" y="-119"/>
 		</transition>
 		<transition>
-			<source ref="id10"/>
-			<target ref="id11"/>
-			<label kind="synchronisation" x="-229" y="68">podDelivered?</label>
-			<label kind="assignment" x="-212" y="51">timer = 0</label>
+			<source ref="id9"/>
+			<target ref="id10"/>
+			<label kind="synchronisation" x="-229" y="59">podDelivered?</label>
+			<label kind="assignment" x="-229" y="76">timer = 0,
+delayHuman = f()</label>
 			<nail x="-323" y="51"/>
 			<nail x="0" y="51"/>
 		</transition>
 	</template>
 	<system>queue = QUEUE();
-task = TASK(TTask, maxTask); // tasks generator
-human  = HUMAN(H);
-system queue, task, human, BOT;</system>
+task = TASK(15.0, 10.0); // tasks generator
+human  = HUMAN(20.0, 3.0);
+system queue, task, human, BOT;
+progress {prog;}</system>
 	<queries>
 		<query>
-			<formula>A[] not queue.LostAPacket</formula>
+			<formula>simulate[&lt;= 1000;1]{queue.LostAPacket, nTask, task.delayTask, task.muT, TTask, BOT(0).idle}</formula>
+			<comment></comment>
+		</query>
+		<query>
+			<formula>Pr[&lt;=1000](&lt;&gt;queue.LostAPacket)</formula>
 			<comment></comment>
 		</query>
 	</queries>
