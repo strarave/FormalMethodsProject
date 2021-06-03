@@ -8,8 +8,8 @@ const int[1,3] kDelivery = 1; /* Horizontal position of the delivery point start
 const int[0,m-4] kEntry = m-4; /*Horizontal position of the entry poiny starting from the left */
 
 const int K = 1; /* Bot movement speed*/ 
-const int nBot = 4; /* Number of bot*/
-double lambdaBot = 20.0; /* Bot idle delay modelled as an exponential distribution X ~ (lambda)*/
+const int nBot = 8; /* Number of bot*/
+double lambdaBot = 10.0; /* Bot idle delay modelled as an exponential distribution X ~ (lambda)*/
 
 const int maxT = 3; /* Maximum length of the queue*/
 
@@ -522,8 +522,8 @@ delayHuman = f()</label>
 		</transition>
 	</template>
 	<system>queue = QUEUE();
-task = TASK(50.0, 5.0); // Model of the task generator. First value is muT, second value is sigmaT
-human  = HUMAN(30.0, 3.0); // // Model of the human. First value is muH, second value is sigmaH
+task = TASK(80.0, 5.0); // Model of the task generator. First value is muT, second value is sigmaT
+human  = HUMAN(100.0, 3.0); // // Model of the human. First value is muH, second value is sigmaH
 system queue, task, human, BOT;
 progress {prog;}</system>
 	<queries>
@@ -532,7 +532,7 @@ progress {prog;}</system>
 			<comment></comment>
 		</query>
 		<query>
-			<formula>Pr[&lt;=500](&lt;&gt;(queue.discarded &gt; 0))</formula>
+			<formula>Pr[&lt;=3000](&lt;&gt;(queue.discarded &gt; 0))</formula>
 			<comment></comment>
 		</query>
 	</queries>
