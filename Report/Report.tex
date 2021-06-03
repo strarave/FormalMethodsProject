@@ -37,9 +37,22 @@
 			
 		
 		\subsection{Bot}
-			The Bot template has the task to model the behaviour of the various robots in the system.\\
-			It accepts as input parameter the custom-type variable $bot_t$
+			The Bot template has the task to model the behaviour of the various robots in the system. \\
+			It accepts as input parameter the custom-type variable $bot_t$, which represents the ID assigned to the bot.\\
+			The template is compesed of the following states:
+			\begin{itemize}
+				\item \textbf{\underline{Idle}}: this is the initial state of the template and it models the bot when it has no claimed task.\\The bot may leave this state when the number of available tasks is greater than zero. Furthermore, the probability that the bot is leaving the states is modeled as an exponential distribution with $\chi\;\sim\;(\lambda)$;
+				\item \textbf{\underline{Claimed}}: this state represents the bot after it claimed a task from the queue until it reaches the delivery point. The bot is forced to leave the state after \emph{K} seconds;
+				\item \textbf{\underline{Delivered}}: the bot reaches this state when its position coincides whit the delivery point. The bot stays in the state until it recevies a \emph{PickUp} message from the \emph{Human};
+				\item \textbf{\underline{Returning}}: after leaving the delivery point, the bot returns back to the \emph{pod position} and, after this, it goes back to the \emph{entry point}. As in claimed, the bot must leave the state after \emph{K} seconds.
+			\end{itemize}
+			When the pod is moving to reach its destination, it follows a predetermined path wihch will be explained in the following section.
 			\subsubsection{Movement}
+				As we can see from the template, the movement of the robot is controlled by a function called \emph{chooseStrategy}.\\
+				This function uses a parameter called \emph{strategy} to determine in which part of the path the robot is and to apply the corresponding movement function.\\
+				\begin{itemize}
+					\item \textbf{\underline{From entry point to pod position}}
+				\end{itemize}
 		
 		\subsection{Queue}
 			The Queue template models the mechanism to manage the arriving of new tasks in the system and their dispatching to the bots. It also carries out the grid initialization.\\
