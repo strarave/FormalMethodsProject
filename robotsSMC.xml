@@ -38,10 +38,20 @@
     7: the spot is occupied by a bot and a claimed pod
 */
 
-const int n = 10;
-const int m = 10;
-const int entryPoint[2] = {9, 0};
-const int deliveryPoint[2] = {0, 9};
+const int n = 10; /* Vertical dimension of the grid */
+const int m = 15; /* Horizontal dimension of the grid */
+const int[1,3] kDelivery = 1; /* Horizontal position of the delivery point starting from the right */
+const int[0,n-4] kEntry = n-4; /*Horizontal position of the entry poiny starting from the left */
+
+const int entryPoint[2] = {n-1, kEntry};
+const int deliveryPoint[2] = {0, m-kDelivery};
+
+const bool laterakPOD = true; /* Are the pod rows starting from the side? (TRUE: from the side; FALSE: pod in the middle of the grid)*/
+
+
+
+
+
 int[0,7] grid[n][m];
 
 int prog = 0;
@@ -69,13 +79,14 @@ void gridInitialization () {
             else {grid[i][j] = 0;}
         }    
     }
-
 }
+
+
 
 // Bots
 const int K = 1;
 const int nBot = 5;
-double lambdaBot = 2.3;
+double lambdaBot = 20.0;
 typedef int[0, nBot-1] bot_t;
 broadcast chan claim[bot_t];
 int tmpCommunicatePodToBot[2];
@@ -148,10 +159,10 @@ int checkPositions(int direction){
     if(direction == 0 &amp;&amp; botPosition[0] &gt; 0){
         selectedCell = grid[botPosition[0] - 1][botPosition[1]];
     }
-    else if (direction == 1 &amp;&amp; botPosition[1] &lt; 9){
+    else if (direction == 1 &amp;&amp; botPosition[1] &lt; m-1){
         selectedCell = grid[botPosition[0]][botPosition[1] + 1];
     }
-    else if (direction == 2 &amp;&amp; botPosition[0] &lt; 9){
+    else if (direction == 2 &amp;&amp; botPosition[0] &lt; n-1){
         selectedCell = grid[botPosition[0] + 1][botPosition[1]];
     }
     else if (direction == 3 &amp;&amp; botPosition[1] &gt; 0){
@@ -170,6 +181,7 @@ void move(){
         return;
     }
     else{
+        waiting = 0;
         
         /* Restore the previous value of the grid */
         if (grid[botPosition[0]][botPosition[1]] == 1 || (isLifting &amp;&amp; preGridValue != 3)) {
@@ -257,7 +269,39 @@ bool checkArrived(int destination[2]) {
 
 
 // FROM ENTRY TO POD POSITION
+/*
 void entryToPod() {
+    moveDown = -checkPositions(0) * (botPosition[0] &gt; podPosition[0]);
+    /*moveRight = 0;*/
+
+/*    if (botPosition[0] &gt;= 2) {
+        moveDown *= !(grid[botPosition[0]-2][botPosition[1]] == 7 ||grid[botPosition[0]-2][botPosition[1]+1] == 7);
+    }
+
+    /*if (botPosition[0] &gt; podPosition[0]) {
+        moveDown = -checkPositions(0);
+        if (botPosition[0] &gt;= 2) {
+            if (grid[botPosition[0]-2][botPosition[1]] == 7 ||grid[botPosition[0]-2][botPosition[1]+1] == 7) {moveDown = 0;}
+        }
+    }*/
+
+/*    moveRight = checkPositions(1) * ((botPosition[1] &lt; podPosition[1]) &amp;&amp; moveDown == 0);
+
+    /*else if (botPosition[1] &lt; podPosition[1]) {
+        moveRight = checkPositions(1);
+    }*/
+/*    move();
+}
+*/
+
+
+void entryToPod() {
+    if (botPosition[1] &gt; 0 &amp;&amp; botPosition[0] == n-1 ) {
+        moveDown = 0;
+        moveRight = -checkPositions(3);
+        move();
+        return;
+    }
     moveDown = -checkPositions(0) * (botPosition[0] &gt; podPosition[0]);
     /*moveRight = 0;*/
 
@@ -291,6 +335,24 @@ void podToDelivery() {
         moveDown = (-1 + 2*(botPosition[0]==0)) * (checkLine(botPosition[0] + 1 - 2*(botPosition[0]!=0), botPosition[1], deliveryPoint[1] - 2));
         /*if (checkLine(botPosition[0] + 1 - 2*(botPosition[0]!=0), botPosition[1], deliveryPoint[1] - 2)) {moveDown = -1 + 2*(botPosition[0]==0);}*/
     }
+    else if (botPosition[1] &lt; m - 2 &amp;&amp; botPosition[0] != deliveryPoint[0]) {moveRight = checkPositions(1);} 
+    else if (botPosition[1] == m - 2 &amp;&amp; botPosition[0] != deliveryPoint[0]) {
+        moveRight = (grid[botPosition[0]][botPosition[1]+1] == 0);
+        moveDown = checkPositions(2)*(moveRight == 0);
+    }
+    else if (botPosition[1] == m-1 &amp;&amp; botPosition[0] != deliveryPoint[0]) {moveDown = -checkPositions(0);}
+    else if (botPosition[0] == deliveryPoint[0]) {moveRight = -checkPositions(3);}
+    move();
+}
+
+/*void podToDelivery() {
+    moveDown = 0;
+    moveRight = 0;
+    if (botPosition[0] == podPosition[0] &amp;&amp; botPosition[1] == podPosition[1]) {
+        /* Check the line and see if it is clear */
+        /*moveDown = (-1 + 2*(botPosition[0]==0)) * (checkLine(botPosition[0] + 1 - 2*(botPosition[0]!=0), botPosition[1], deliveryPoint[1] - 2));
+        /*if (checkLine(botPosition[0] + 1 - 2*(botPosition[0]!=0), botPosition[1], deliveryPoint[1] - 2)) {moveDown = -1 + 2*(botPosition[0]==0);}*/
+    /*}
     else if (botPosition[1] &lt; deliveryPoint[1] - 1) {moveRight = checkPositions(1);} 
     else if (botPosition[1] == deliveryPoint[1] - 1) {
         moveRight = (grid[botPosition[0]][botPosition[1]+1] == 0);
@@ -298,7 +360,7 @@ void podToDelivery() {
     }
     else if (botPosition[1] == deliveryPoint[1]) {moveDown = -checkPositions(0);}
     move();
-}
+}*/
 
 
 
@@ -307,7 +369,7 @@ void podToDelivery() {
 void deliveryToPod() {
     moveDown = 0;
     moveRight = 0;
-    if (botPosition[1] &gt;= deliveryPoint[1] - 1) {
+    if (botPosition[1] &gt;= m - 2) {
         moveRight = -checkPositions(3);
     }
     else if (botPosition[0] &lt; podPosition[0] - 2) {
@@ -332,13 +394,24 @@ void deliveryToPod() {
 
 // FROM POD POSTION TO ENTRY
 void podToEntry() {
-    moveDown = checkPositions(2)*(botPosition[0] &lt; entryPoint[0]);
-    moveRight = -checkPositions(3)*(botPosition[0] &gt;= entryPoint[0]);
+    /*moveDown = checkPositions(2)*(botPosition[0] &lt; entryPoint[0]);
+    moveRight = -checkPositions(3)*(botPosition[0] &gt;= entryPoint[0]);*/
 
-    if (moveDown == 0 &amp;&amp; moveRight == 0) {
+    moveRight = -checkPositions(3)*(botPosition[1] &gt; entryPoint[1]) + checkPositions(1)*(botPosition[1] &lt; entryPoint[1]);
+    moveDown = checkPositions(2)*(botPosition[1] == entryPoint[1]);
+    
+
+
+    if (moveDown == 0 &amp;&amp; moveRight == 0 &amp;&amp; botPosition[1] == entryPoint[1]) {
         waiting ++;
         moveRight = -checkPositions(3)*(waiting == 2);
-        moveRight += checkPositions(1)*(moveRight==0);
+        moveRight += checkPositions(1)*(moveRight==0)*(waiting == 2);
+        waiting -= 2*(waiting==2);
+    }
+    else if (moveDown == 0 &amp;&amp; moveRight == 0) {
+        waiting ++;
+        moveDown = checkPositions(2)*(waiting == 2);
+        moveDown -= checkPositions(0)*(moveDown==0)*(waiting == 2);
         waiting -= 2*(waiting==2);
     }
     move();
@@ -366,7 +439,7 @@ void chooseStrategy() {
 }</declaration>
 		<location id="id0" x="1275" y="-425">
 			<name x="1190" y="-450">idle</name>
-			<label kind="exponentialrate" x="1190" y="-433">lambdaBot</label>
+			<label kind="exponentialrate" x="1173" y="-433">lambdaBot</label>
 		</location>
 		<location id="id1" x="1844" y="-425">
 			<name x="1861" y="-425">claimed</name>
@@ -607,9 +680,12 @@ delayTask = f()</label>
 clock timer;
 /* Setting timer equal to  when it is not used should speed up the simulation*/
 
-double delayHuman;
-double f() {
+int delayHuman;
+int f() { 
+    return 10;
+/*
     return Normal(muH, sigmaH);
+*/
 }</declaration>
 		<location id="id8" x="-323" y="-34">
 			<name x="-374" y="-43">free</name>
@@ -639,13 +715,13 @@ delayHuman = f()</label>
 		</transition>
 	</template>
 	<system>queue = QUEUE();
-task = TASK(20.0, 5.0); // tasks generator
+task = TASK(50.0, 5.0); // tasks generator
 human  = HUMAN(50.0, 3.0);
 system queue, task, human, BOT;
 progress {prog;}</system>
 	<queries>
 		<query>
-			<formula>simulate[&lt;= 1000;1]{nTask, task.delayTask, BOT(0).idle}</formula>
+			<formula>simulate[&lt;= 1000;1]{nTask, task.delayTask, BOT(0).botPosition[0], BOT(0).botPosition[1], BOT(0).idle}</formula>
 			<comment></comment>
 		</query>
 		<query>
