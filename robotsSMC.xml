@@ -102,7 +102,8 @@ double stdNormal() {
 }
 
 double Normal(double mean, double stdDev) {
-    return mean + stdDev * stdNormal();
+    double final = mean + stdDev * stdNormal();
+    return final * (final &gt;= 0); // only positive normal values
 }</declaration>
 	<template>
 		<name>BOT</name>
