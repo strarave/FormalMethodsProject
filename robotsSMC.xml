@@ -680,12 +680,9 @@ delayTask = f()</label>
 clock timer;
 /* Setting timer equal to  when it is not used should speed up the simulation*/
 
-int delayHuman;
-int f() { 
-    return 10;
-/*
+double delayHuman;
+double f() { 
     return Normal(muH, sigmaH);
-*/
 }</declaration>
 		<location id="id8" x="-323" y="-34">
 			<name x="-374" y="-43">free</name>
