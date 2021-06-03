@@ -11,19 +11,30 @@
 	
 	\section{The Model}
 		\subsection{Grid}
-			The grid is implemented as a global bidimensional array of integers. This implementation allowed us to manage in a detailed way the single cells, and also helped us simplify the movement of the bots. We did not insert a template Grid because this would have required the introduction of many additional synchronization channels and would have been very difficult to integrate with other templates.\\
+			The grid is implemented as a global bidimensional array of integers. This implementation allowed us to manage in a detailed way the single cells, and also helped us simplify the movement of the bots. We did not insert a template Grid because this would have required the introduction of many additional synchronization channels and would have been very difficult to integrate with other templates.
 			The integers that model the grid cells \emph{bounded}: they can only assume 8 different values. These are
 			\begin{enumerate}[start=0, label={\arabic* :}]
 				\item the cell is free, so no bot or pods are in that cell
 				\item the cell is occupied only by a bot
 				\item the cell is occupied only by a pod that is not claimed
 				\item the cell is occupied only by a pod that is claimed by a task 
-				\item the cell is the entry point
+				\item the cell is the entry point 
 				\item the cell is the delivery point
 				\item the cell is occupied by a bot and a free pod
 				\item the cell is occupied by a bot and a claimed pod
 			\end{enumerate}
-			All these slight differences among cell states are needed to safely manage the movement of the bots \emph{and} the assignement of a pod to a task. Moreover, adding two cell state to the grid representation allowed us to completely remove the "Pod" template, hence making the model slimmer. 
+			All these slight differences among cell states are needed to safely manage the movement of the bots \emph{and} the assignement of a pod to a task. Moreover, adding two cell state to the grid representation allowed us to completely remove the "Pod" template, hence making the model slimmer.\\
+			The grid is highly configurable; these are the parameters that can be changed:
+			\begin{itemize}
+				\item lenght of the grid
+				\item width of the grid
+				\item entry point position coloumn (can be moved along the lower edge of the grid but cannot enter the last 3 coloumns) 
+				\item delivery point position coloumn (can be moved in the last three)
+				\item row lenght
+				\item space between rows
+			\end{itemize}
+			Unfortunately, Uppaal requires this parameters to be constant at compile time, so they have to be manually changed in the template. We would have preferred to parametrize them, so to have to modify only the global definition. 
+			
 		
 		\subsection{Bot}
 			The Bot template has the task to model the behaviour of the various robots in the system. 
