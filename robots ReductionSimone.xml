@@ -38,16 +38,31 @@
     7: the spot is occupied by a bot and a claimed pod
 */
 
-const int n = 10;
-const int m = 10;
-const int entryPoint[2] = {9, 9};
-const int deliveryPoint[2] = {0, 9};
+const int n = 100;
+const int m = 20;
+const int entryPoint[2] = {n-1, m-1};
+const int deliveryPoint[2] = {0, m-1};
 int[0,7] grid[n][m];
 
-
+const int freeRow = 4;
+const int podRowLength = m-4;
 //First scheme of the grid
 
+
+
 void gridInitialization () {
+    int i,j;
+    for (i = 0; i &lt; n; i++){
+        for (j = 0; j &lt; m; j++) {
+            if (i == entryPoint[0] &amp;&amp; j == entryPoint[1]) {grid[i][j] = 4;}
+            else if (i == deliveryPoint[0] &amp;&amp; j == deliveryPoint[1]) {grid[i][j] = 5;}
+            else if (i != n-1 &amp;&amp; i % (freeRow + 1) == 0 &amp;&amp; j &lt; podRowLength) {grid[i][j] = 2;}
+            else {grid[i][j] = 0;}
+        }    
+    }
+}
+
+/*void gridInitialization () {
     int i,j;
     for (i = 0; i &lt; n; i++){
         for (j = 0; j &lt; m; j++) {
@@ -58,7 +73,7 @@ void gridInitialization () {
         }    
     }
 
-}
+}*/
 
 // Bots
 const int K = 2;
