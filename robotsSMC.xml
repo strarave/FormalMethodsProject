@@ -444,6 +444,7 @@ strategy ++</label>
 
 
 int queueList[maxT][2];
+int discarded = 0;
 
 
 void initQueue(){
@@ -479,6 +480,16 @@ void pop() {
 		<transition>
 			<source ref="id5"/>
 			<target ref="id5"/>
+			<label kind="guard" x="59" y="-25">nTask &gt;= maxT</label>
+			<label kind="synchronisation" x="59" y="-8">newTask?</label>
+			<label kind="assignment" x="59" y="8">grid[tmpPodChosenByTask[0]][tmpPodChosenByTask[1]]--,
+discarded ++</label>
+			<nail x="42" y="93"/>
+			<nail x="42" y="-85"/>
+		</transition>
+		<transition>
+			<source ref="id5"/>
+			<target ref="id5"/>
 			<label kind="select" x="-153" y="-187">i : bot_t</label>
 			<label kind="guard" x="-153" y="-170">nTask &gt; 0</label>
 			<label kind="synchronisation" x="-153" y="-153">claim[i]?</label>
@@ -490,6 +501,7 @@ tmpCommunicatePodToBot = queueList[0]</label>
 		<transition>
 			<source ref="id5"/>
 			<target ref="id5"/>
+			<label kind="guard" x="-153" y="161">nTask &lt; maxT</label>
 			<label kind="synchronisation" x="-153" y="110">newTask?</label>
 			<label kind="assignment" x="-153" y="127">append(tmpPodChosenByTask), 
 nTask++, tmpCommunicatePodToBot = queueList[0]</label>
@@ -637,7 +649,7 @@ progress {prog;}</system>
 			<comment></comment>
 		</query>
 		<query>
-			<formula>Pr[&lt;=500](&lt;&gt;(nTask &gt; maxT))</formula>
+			<formula>Pr[&lt;=1500](&lt;&gt;(queue.discarded &gt; 0))</formula>
 			<comment></comment>
 		</query>
 	</queries>
