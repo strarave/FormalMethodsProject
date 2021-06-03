@@ -1,6 +1,11 @@
+% 
+
 \documentclass[10pt,a4paper]{article}
 
-\usepackage{enumitem}
+\usepackage{float}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{array}
 
 \title{Stochastic Model Checking of Warehouse Robotics}
 \author{Corti Simone, Ravella Elia, Sarneri Enrico}
@@ -11,16 +16,9 @@
 	
 	\section{The Model}
 		\subsection{Grid}
-			The grid is implemented as a global bidimensional array of integers. This implementation allowed us to manage in a detailed way the single cells, and also helped us simplify the movement of the bots. We did not insert a template Grid because this would have required the introduction of many additional synchronization channels and would have been very difficult to integrate with other templates.\\
-			The integers that model the grid cells \emph{bounded}: they can only assume 8 different values. These are
-			\begin{enumerate}[start=0, label={\arabic* :}]
-				\item 
-				\item 
-				\item
-			\end{enumerate}
 		
 		\subsection{Bot}
-			The Bot template has the task to model the behaviour of the various robots in the system
+			The Bot template has the task to model the behaviour of the various robots in the system. 
 			\subsubsection{Movement}
 		
 		\subsection{Queue}
@@ -34,26 +32,17 @@
 						\item Removing a task from the queue when it's been claimed by a bot
 						\item Keeping count of how many tasks has been issued, how many tasks are executed and how many tasks have been lost
 					\end{enumerate}
-					This last function is crucial, because the property that must hold in the system throughout the whole test run will directly address this particular Queue property.
+					This last function is crucial, because the property that must hold in the system throughout the whole test run will directly address the number of tasks that have been lost managed by this process.
 			\end{itemize}
-			We have initally modeled this template with a state dedicated to each one of the functions listed above, then we progressively removed the states "embedding" their functionalities in the transitions and grouping them together. This was done in order to reduce the number of states to verify and improve the verification time.\\
-			The queue itself is implemented as an array of coordinates of the pod requested by the task. It was implemented this way because the pod requested is the only valid information to memorize about a task. Moreover, we have seen that Uppaal can perform array operation fast. 
+			We have initally modeled this template with a state dedicated to each one of the function listed above, then we progressively removed the states "embedding" their functionalities in the transitions and grouping them together. This was done in order to reduce the number of states to verify and improve the verification time. 
 		
 		\subsection{Task and Human}
-			The Task template models the generation of new tasks. Its parameters sets the values of mean and standard deviation of the normal distribution associated to the "spawn rate" of new tasks.\\
+			The Task template models the generation process of new tasks. Its parameters sets the values of mean and standard deviation of the normal distribution associated to the "spawn rate" of new tasks.\\
 			It's composed of two states:
 			\begin{itemize}
-				\item A \emph{startingTask} initial commited state that is in charge of initializing the additional data structures of the model, such as the list of available pods.
+				\item A \emph{startingTask} initial commit state that is in charge of initializing the additional data structures of the model, such as the list of available pods.
 				\item An \emph{idle} state that just sends tokens on the channel \emph{newTask} at random interval of time (according to the distribution specified).
 			\end{itemize}
-			The initial model of Task was composed of five total locations, but we managed to reduce this number to only two by making the passing of values between processes synchronous. Also, moving to stochastic model checking, we could get rid of some states that we previously used to check particular configurations of the model.
-			\\\\
-			Human is another two-states template: it only comprises of
-			\begin{itemize}
-				\item \emph{free} initial state that reacts to the arrival of a token on the podDelivered channel
-				\item \emph{busy} state that is exited when an amount of time suitable for the human operator has elapsed. Exiting from this state frees the bot to return the pod to his position.
-			\end{itemize}
-			The template for the human operator is one of the simplest in our model because its actions are very limited. 
 			
 	
 	\section{System Configurations}

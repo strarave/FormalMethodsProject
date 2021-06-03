@@ -15,7 +15,9 @@ double lambdaBot = 20.0; /* Bot idle delay modelled as an exponential distributi
 
 const int maxT = 3; /* Maximum length of the queue*/
 
-const bool laterakPOD = true; /* Are the pod rows starting from the side? (TRUE: from the side; FALSE: pod in the middle of the grid)*/
+const bool lateralPOD = true; /* Are the pod rows starting from the side? (TRUE: from the side; FALSE: pod in the middle of the grid)*/
+const int[0, m-3] podRowLength = m - 4 /* Length of a pod row */
+const int freeRow = 1 /* Number of free rows between two pod rows */
 
 
 
@@ -23,11 +25,11 @@ const bool laterakPOD = true; /* Are the pod rows starting from the side? (TRUE:
 // Non-modifiable parameters
 
 int[0,7] grid[n][m]; /* Grid initialization */
-
-int prog = 0;
+int prog = 0; /* Progress variable */
+const int entryPoint[2] = {n-1, kEntry}; /* Entry point */
+const int deliveryPoint[2] = {0, m - kDelivery}; /*Delivery point */
 
 // Scheme of the grid
-
 void gridInitialization () {
     int i,j;
     for (i = 0; i &lt; n; i++){
@@ -48,11 +50,9 @@ broadcast chan claim[bot_t];
 int tmpCommunicatePodToBot[2];
 
 // Queue
-
 int nTask = 0;
 
 // Comunication Task - Queue
-const int TTask = 20;
 broadcast chan newTask;
 meta int tmpPodChosenByTask[2];
 
@@ -60,7 +60,7 @@ meta int tmpPodChosenByTask[2];
 broadcast chan pickUp;
 broadcast chan podDelivered;
 
-// SMC
+// Normal distribution
 const double PI = 3.14159265358979323846;
 
 double stdNormal() {
@@ -74,41 +74,19 @@ double Normal(double mean, double stdDev) {
 	<template>
 		<name>BOT</name>
 		<parameter>bot_t ID</parameter>
-		<declaration>bool isLifting;
-clock timer;
-int[-1, 1] moveDown;
-int[-1, 1] moveRight;
-int podPosition[2];
-int botPosition[2] = entryPoint;
+		<declaration>bool isLifting; /* Is the bot lifting a pod?*/
+clock timer; /* Bot timer */
+int[-1, 1] moveDown; /* Up-down direction move */
+int[-1, 1] moveRight; /* Left-right direction move */
+int podPosition[2]; /* Position of the claimed pod */
+int botPosition[2] = entryPoint; /* Position of the bot */
 int[0, 7] preGridValue = 4; /* Variable that stores the previous state of the grid */
-int[0, 7] selectedCell = 7;
-int[0, 2] waiting = 0;
+int[0, 7] selectedCell = 7; /* Number assigned to the cell to check */
+int[0, 2] waiting = 0; /* Move passed waiting because the destination cell is occupied */
+int[0, 3] strategy = 0; /* Part of the robot path */
 
 
-int[0, 3] strategy = 0; 
-/*
-    0:    entryToPod
-    1:    podToDelivery
-    2:    deliveryToPod
-    3:    podToEntry
 
-*/
-
-/*
-   direction is an integer starting from 0 to 3 that represents the cardinal points around the 
-   botPosition. 0 is north, clockwise order
-   the grid:
-
-    The grid is n x m matrix of integers and has as elements a number in [0,7]
-    0: the spot is free
-    1: the spot is occupied by a bot with no pod over it
-    2: the spot is occupied by a pod and the pod is free (so no bot under the pod)
-    3: the spot is occupied by a pod and the pod is claimed by a task (so no bot under the pod)
-    4: the spot is the entry point
-    5: the spot is the delivery point
-    6: the spot is occupied by a bot and a free pod
-    7: the spot is occupied by a bot and a claimed pod
-*/
 int checkPositions(int direction){
     selectedCell = 7; // default condition == the most strict
     if(direction == 0 &amp;&amp; botPosition[0] &gt; 0){
@@ -127,10 +105,8 @@ int checkPositions(int direction){
 }
 
 
-
-/*
-    this function moves the robot by updating his position on the grid
-*/
+// Function to actually move the bot.
+// It uses parameters moveDown and moveRight and it updates value of the new cell occupied by the bot as well as the value of the previous cell
 void move(){
     if(moveDown == 0 &amp;&amp; moveRight == 0){
         return;
@@ -146,42 +122,19 @@ void move(){
             grid[botPosition[0]][botPosition[1]] = 2;
         }
         else if (grid[botPosition[0]][botPosition[1]] == 7) {
-
             grid[botPosition[0]][botPosition[1]] = 5*(botPosition[0] == deliveryPoint[0] &amp;&amp; botPosition[1] == deliveryPoint[1]) + 3* (!isLifting &amp;&amp; preGridValue != 5);
-            
-            /*if (botPosition[0] == deliveryPoint[0] &amp;&amp; botPosition[1] == deliveryPoint[1])
-                grid[botPosition[0]][botPosition[1]] = 5;
-            else if (preGridValue == 3 &amp;&amp; isLifting) {
-                grid[botPosition[0]][botPosition[1]] = 0;
-            }
-            else {
-                grid[botPosition[0]][botPosition[1]] = 3;
-            }*/
         }
         
         botPosition[0] += moveDown;
-        botPosition[1] += moveRight;
-        
+        botPosition[1] += moveRight;    
     }
 
     // update the grid
     preGridValue = grid[botPosition[0]][botPosition[1]];
-
     grid[botPosition[0]][botPosition[1]] = (preGridValue + 4)*(preGridValue == 2 || preGridValue == 3) + 4 * (preGridValue == 4) + 7 * isLifting + (preGridValue == 0 &amp;&amp; !isLifting);
-    
-    /*if (preGridValue == 2) {
-        grid[botPosition[0]][botPosition[1]] = 6;
-    }
-    else if (preGridValue == 3 || isLifting) {
-        grid[botPosition[0]][botPosition[1]] = 7;
-    }
-    else if (preGridValue != 4) {
-        grid[botPosition[0]][botPosition[1]] = 1;
-    }
-    else {
-        grid[botPosition[0]][botPosition[1]] = 4;
-    }*/
 }
+
+
 
 bool checkLine(int line, int limit0, int limit1) {
     int cellCheck;
@@ -198,10 +151,12 @@ bool checkLine(int line, int limit0, int limit1) {
     return true;
 }
 
+
 void setPodPosition(){
     podPosition[0] = tmpCommunicatePodToBot[0];
     podPosition[1] = tmpCommunicatePodToBot[1];
 }
+
 
 
 
@@ -210,46 +165,7 @@ bool checkArrived(int destination[2]) {
 }
 
 
-
-
-
-
-// NEW GRID
-/*     The change is to consider the entry point in 0,0 instead of 9,0. This will allow simpler controll of robot trajectories
-    It is even quiet generalizable because the requirements we ask are:
-    --    The entry point is in the bottom line and in the left half (More precisely: entryPoint = 9, [0:m-3]
-    --    Delivery point is in the top line
-    --    There is at least a 3-tile-large highway on the right.
-*/
-
-
-// FROM ENTRY TO POD POSITION
-/*
-void entryToPod() {
-    moveDown = -checkPositions(0) * (botPosition[0] &gt; podPosition[0]);
-    /*moveRight = 0;*/
-
-/*    if (botPosition[0] &gt;= 2) {
-        moveDown *= !(grid[botPosition[0]-2][botPosition[1]] == 7 ||grid[botPosition[0]-2][botPosition[1]+1] == 7);
-    }
-
-    /*if (botPosition[0] &gt; podPosition[0]) {
-        moveDown = -checkPositions(0);
-        if (botPosition[0] &gt;= 2) {
-            if (grid[botPosition[0]-2][botPosition[1]] == 7 ||grid[botPosition[0]-2][botPosition[1]+1] == 7) {moveDown = 0;}
-        }
-    }*/
-
-/*    moveRight = checkPositions(1) * ((botPosition[1] &lt; podPosition[1]) &amp;&amp; moveDown == 0);
-
-    /*else if (botPosition[1] &lt; podPosition[1]) {
-        moveRight = checkPositions(1);
-    }*/
-/*    move();
-}
-*/
-
-
+// From entry to Pod Position
 void entryToPod() {
     if (botPosition[1] &gt; 0 &amp;&amp; botPosition[0] == n-1 ) {
         moveDown = 0;
@@ -258,37 +174,22 @@ void entryToPod() {
         return;
     }
     moveDown = -checkPositions(0) * (botPosition[0] &gt; podPosition[0]);
-    /*moveRight = 0;*/
-
     if (botPosition[0] &gt;= 2) {
         moveDown *= !(grid[botPosition[0]-2][botPosition[1]] == 7 ||grid[botPosition[0]-2][botPosition[1]+1] == 7);
     }
-
-    /*if (botPosition[0] &gt; podPosition[0]) {
-        moveDown = -checkPositions(0);
-        if (botPosition[0] &gt;= 2) {
-            if (grid[botPosition[0]-2][botPosition[1]] == 7 ||grid[botPosition[0]-2][botPosition[1]+1] == 7) {moveDown = 0;}
-        }
-    }*/
-
     moveRight = checkPositions(1) * ((botPosition[1] &lt; podPosition[1]) &amp;&amp; moveDown == 0);
-
-    /*else if (botPosition[1] &lt; podPosition[1]) {
-        moveRight = checkPositions(1);
-    }*/
     move();
 }
 
 
 
-// FROM POD POSITION TO DELIVERY
+// From pod position to delivery point
 void podToDelivery() {
     moveDown = 0;
     moveRight = 0;
     if (botPosition[0] == podPosition[0] &amp;&amp; botPosition[1] == podPosition[1]) {
         /* Check the line and see if it is clear */
         moveDown = (-1 + 2*(botPosition[0]==0)) * (checkLine(botPosition[0] + 1 - 2*(botPosition[0]!=0), botPosition[1], deliveryPoint[1] - 2));
-        /*if (checkLine(botPosition[0] + 1 - 2*(botPosition[0]!=0), botPosition[1], deliveryPoint[1] - 2)) {moveDown = -1 + 2*(botPosition[0]==0);}*/
     }
     else if (botPosition[1] &lt; m - 2 &amp;&amp; botPosition[0] != deliveryPoint[0]) {moveRight = checkPositions(1);} 
     else if (botPosition[1] == m - 2 &amp;&amp; botPosition[0] != deliveryPoint[0]) {
@@ -300,27 +201,9 @@ void podToDelivery() {
     move();
 }
 
-/*void podToDelivery() {
-    moveDown = 0;
-    moveRight = 0;
-    if (botPosition[0] == podPosition[0] &amp;&amp; botPosition[1] == podPosition[1]) {
-        /* Check the line and see if it is clear */
-        /*moveDown = (-1 + 2*(botPosition[0]==0)) * (checkLine(botPosition[0] + 1 - 2*(botPosition[0]!=0), botPosition[1], deliveryPoint[1] - 2));
-        /*if (checkLine(botPosition[0] + 1 - 2*(botPosition[0]!=0), botPosition[1], deliveryPoint[1] - 2)) {moveDown = -1 + 2*(botPosition[0]==0);}*/
-    /*}
-    else if (botPosition[1] &lt; deliveryPoint[1] - 1) {moveRight = checkPositions(1);} 
-    else if (botPosition[1] == deliveryPoint[1] - 1) {
-        moveRight = (grid[botPosition[0]][botPosition[1]+1] == 0);
-        moveDown = checkPositions(2)*(moveRight == 0);
-    }
-    else if (botPosition[1] == deliveryPoint[1]) {moveDown = -checkPositions(0);}
-    move();
-}*/
 
 
-
-
-// FROM DELIVERY TO POD POSITION
+// From delivery point to pod position
 void deliveryToPod() {
     moveDown = 0;
     moveRight = 0;
@@ -332,9 +215,6 @@ void deliveryToPod() {
     }
     else if (botPosition[0] == podPosition[0] - 2 || botPosition[0] == podPosition[0]) {
         moveDown = checkPositions(2) * (checkLine(botPosition[0] + 1, 0, botPosition[1]));
-        /*if (checkLine(botPosition[0] + 1, 0, botPosition[1])) {
-            moveDown = checkPositions(2);
-        }*/
     }
     else if (botPosition[1] &gt; podPosition[1]) {
         moveRight = -checkPositions(3);
@@ -347,16 +227,10 @@ void deliveryToPod() {
 
 
 
-// FROM POD POSTION TO ENTRY
+// From pod position to entry point
 void podToEntry() {
-    /*moveDown = checkPositions(2)*(botPosition[0] &lt; entryPoint[0]);
-    moveRight = -checkPositions(3)*(botPosition[0] &gt;= entryPoint[0]);*/
-
     moveRight = -checkPositions(3)*(botPosition[1] &gt; entryPoint[1]) + checkPositions(1)*(botPosition[1] &lt; entryPoint[1]);
     moveDown = checkPositions(2)*(botPosition[1] == entryPoint[1]);
-    
-
-
     if (moveDown == 0 &amp;&amp; moveRight == 0 &amp;&amp; botPosition[1] == entryPoint[1]) {
         waiting ++;
         moveRight = -checkPositions(3)*(waiting == 2);
@@ -371,6 +245,8 @@ void podToEntry() {
     }
     move();
 }
+
+// Choose the strategy to move the robot
 
 void chooseStrategy() {
     if (strategy == 0) {
@@ -390,7 +266,6 @@ void chooseStrategy() {
     else if (strategy == 3) {
         podToEntry();
     }
-
 }</declaration>
 		<location id="id0" x="1275" y="-425">
 			<name x="1190" y="-450">idle</name>
@@ -461,25 +336,16 @@ strategy ++</label>
 	</template>
 	<template>
 		<name>QUEUE</name>
-		<declaration>/*
-    When a new task is available, the template TASK send a newTask! and the queue collect the new task
-    When a bot is idle, it sends a claim! to get the next task in the queue
-    If a the queue receives a newTask and it is already full, it reaches a deadlock state
+		<declaration>int queueList[maxT][2]; /* List of available task */
+int discarded = 0; /* Number of discarded tasks because the queue is full */
 
-    The temporary variable tmpCommunicatePodToBot is used to communicate the chosen pod to the bot
-    The temporary variable tmpPodChosenByTask is used to receive the pod chosen by the task template and append it to queueList
-*/
-
-
-int queueList[maxT][2];
-int discarded = 0;
-
-
+// Initialization function
 void initQueue(){
     int j;
     for (j = 0; j&lt;maxT; j++){queueList[j][0] = -1; queueList[j][1] = -1;}
 }
 
+// Function to append the new task to the ones already in the queue
 void append(int k[2]) {
     int j;
     for (j = 0; j&lt;maxT; j++) {
@@ -490,6 +356,7 @@ void append(int k[2]) {
     }
 }
 
+// Function to remove the task claimed by the bot
 void pop() {
     int j;
     for (j = 0; j&lt;maxT; j++) {
@@ -546,22 +413,13 @@ gridInitialization()</label>
 	<template>
 		<name>TASK</name>
 		<parameter> double muT, double sigmaT</parameter>
-		<declaration>/*
-    This template should be used to define the evolution of a single task
-    When the a new task is added the template choses the corresponding pod randomly among the available ones
-    First implementation: a new task arrives every T seconds (constant value)
-    Future implementation: T is a sample of a normal distribution
-
-    IMPORTANT: What to do if no pod is available?
-    SOLUTION: If no pod is available Task returns to idle without doing anything. After another T-second interval it will try to send another request
-*/
-
-clock timer;
-int avPods[podCounter][2]; /*The amatrix is oversized because it considers there could be a pod for every spot of the grid. Consider adding a parameter for the total number of pods */
+		<declaration>clock timer; /* Task timer */
+int avPods[podCounter][2]; /* Position of all available pods */
 int[0, podCounter] avPods_quantity = 0; /*Number of available pods*/
-int chosenPod[2];
-double delayTask;
+int chosenPod[2]; /* Pod chosen to be associated with the new task */
+double delayTask; /* Time until the next task generation */
 
+// Initialization function
 void init_avPods () {
     int i;
     for (i = 0; i &lt; podCounter; i++) {
@@ -570,7 +428,8 @@ void init_avPods () {
     }
 }
 
-void checkAv () { /*Function to check which pods are available*/
+// Function to check which pods are available
+void checkAv () {
     int i,j;
     for (i = 0; i &lt; n; i++) {
         for (j = 0; j &lt; m; j++) {
@@ -583,10 +442,12 @@ void checkAv () { /*Function to check which pods are available*/
     }
 }
 
+// Function to choose the pod to associate with the next task
 void choosePod(int i) {
     chosenPod = avPods[i % avPods_quantity];
 }
 
+// Function to assign a normal distributed value to delayTask
 double f() {
     return Normal(muT, sigmaT);
 }</declaration>
@@ -627,15 +488,10 @@ delayTask = f()</label>
 	<template>
 		<name>HUMAN</name>
 		<parameter>double muH, double sigmaH</parameter>
-		<declaration>/* 
-    The human operator waits for a pod that communicates that a pod has been delivered.
-    After receiveing the message he stays in busy for H seconds and after that communicates to the robot it is free to go
-*/
+		<declaration>clock timer; /* Human timer */
+double delayHuman; /* Time the human need to complete his work */
 
-clock timer;
-/* Setting timer equal to  when it is not used should speed up the simulation*/
-
-double delayHuman;
+// Function to assign a normal distributed value to delayHuman
 double f() { 
     return Normal(muH, sigmaH);
 }</declaration>
@@ -667,8 +523,8 @@ delayHuman = f()</label>
 		</transition>
 	</template>
 	<system>queue = QUEUE();
-task = TASK(50.0, 5.0); // tasks generator
-human  = HUMAN(50.0, 3.0);
+task = TASK(23.0, 5.0); // Model of the task generator. First value is muT, second value is sigmaT
+human  = HUMAN(30.0, 3.0); // // Model of the human. First value is muH, second value is sigmaH
 system queue, task, human, BOT;
 progress {prog;}</system>
 	<queries>
@@ -677,7 +533,7 @@ progress {prog;}</system>
 			<comment></comment>
 		</query>
 		<query>
-			<formula>Pr[&lt;=1500](&lt;&gt;(queue.discarded &gt; 0))</formula>
+			<formula>Pr[&lt;=500](&lt;&gt;(queue.discarded &gt; 0))</formula>
 			<comment></comment>
 		</query>
 	</queries>
