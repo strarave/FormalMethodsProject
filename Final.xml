@@ -1,0 +1,684 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE nta PUBLIC '-//Uppaal Team//DTD Flat System 1.1//EN' 'http://www.it.uu.se/research/group/darts/uppaal/flat-1_2.dtd'>
+<nta>
+	<declaration>// Model parameters (free to be modified)
+
+const int n = 10; /* Vertical dimension of the grid */
+const int m = 15; /* Horizontal dimension of the grid */
+const int[1,3] kDelivery = 1; /* Horizontal position of the delivery point starting from the right */
+const int[0,n-4] kEntry = n-4; /*Horizontal position of the entry poiny starting from the left */
+const int podCounter = 30; /*Please specify the number of pod. This will speed up the simulation*/
+
+const int K = 1; /* Bot movement speed*/ 
+const int nBot = 5; /* Number of bot*/
+double lambdaBot = 20.0; /* Bot idle delay modelled as an exponential distribution X ~ (lambda)*/
+
+const int maxT = 3; /* Maximum length of the queue*/
+
+const bool laterakPOD = true; /* Are the pod rows starting from the side? (TRUE: from the side; FALSE: pod in the middle of the grid)*/
+
+
+
+
+// Non-modifiable parameters
+
+int[0,7] grid[n][m]; /* Grid initialization */
+
+int prog = 0;
+
+// Scheme of the grid
+
+void gridInitialization () {
+    int i,j;
+    for (i = 0; i &lt; n; i++){
+        for (j = 0; j &lt; m; j++) {
+            if (i == entryPoint[0] &amp;&amp; j == entryPoint[1]) {grid[i][j] = 4;}
+            else if (i == deliveryPoint[0] &amp;&amp; j == deliveryPoint[1]) {grid[i][j] = 5;}
+            else if (i % 2 == 0 &amp;&amp; j &lt; 6) {grid[i][j] = 2;}
+            else {grid[i][j] = 0;}
+        }    
+    }
+}
+
+
+
+// Bots
+typedef int[0, nBot-1] bot_t;
+broadcast chan claim[bot_t];
+int tmpCommunicatePodToBot[2];
+
+// Queue
+
+int nTask = 0;
+
+// Comunication Task - Queue
+const int TTask = 20;
+broadcast chan newTask;
+meta int tmpPodChosenByTask[2];
+
+// Human
+broadcast chan pickUp;
+broadcast chan podDelivered;
+
+// SMC
+const double PI = 3.14159265358979323846;
+
+double stdNormal() {
+    return sqrt(-2*ln(1-random(1)))*cos(2*PI*random(1));
+}
+
+double Normal(double mean, double stdDev) {
+    double final = mean + stdDev * stdNormal();
+    return final * (final &gt;= 0); // only positive normal values
+}</declaration>
+	<template>
+		<name>BOT</name>
+		<parameter>bot_t ID</parameter>
+		<declaration>bool isLifting;
+clock timer;
+int[-1, 1] moveDown;
+int[-1, 1] moveRight;
+int podPosition[2];
+int botPosition[2] = entryPoint;
+int[0, 7] preGridValue = 4; /* Variable that stores the previous state of the grid */
+int[0, 7] selectedCell = 7;
+int[0, 2] waiting = 0;
+
+
+int[0, 3] strategy = 0; 
+/*
+    0:    entryToPod
+    1:    podToDelivery
+    2:    deliveryToPod
+    3:    podToEntry
+
+*/
+
+/*
+   direction is an integer starting from 0 to 3 that represents the cardinal points around the 
+   botPosition. 0 is north, clockwise order
+   the grid:
+
+    The grid is n x m matrix of integers and has as elements a number in [0,7]
+    0: the spot is free
+    1: the spot is occupied by a bot with no pod over it
+    2: the spot is occupied by a pod and the pod is free (so no bot under the pod)
+    3: the spot is occupied by a pod and the pod is claimed by a task (so no bot under the pod)
+    4: the spot is the entry point
+    5: the spot is the delivery point
+    6: the spot is occupied by a bot and a free pod
+    7: the spot is occupied by a bot and a claimed pod
+*/
+int checkPositions(int direction){
+    selectedCell = 7; // default condition == the most strict
+    if(direction == 0 &amp;&amp; botPosition[0] &gt; 0){
+        selectedCell = grid[botPosition[0] - 1][botPosition[1]];
+    }
+    else if (direction == 1 &amp;&amp; botPosition[1] &lt; m-1){
+        selectedCell = grid[botPosition[0]][botPosition[1] + 1];
+    }
+    else if (direction == 2 &amp;&amp; botPosition[0] &lt; n-1){
+        selectedCell = grid[botPosition[0] + 1][botPosition[1]];
+    }
+    else if (direction == 3 &amp;&amp; botPosition[1] &gt; 0){
+        selectedCell = grid[botPosition[0]][botPosition[1] - 1];
+    }
+    return 1*(selectedCell == 0 || (selectedCell == 2 &amp;&amp; !isLifting) || (selectedCell == 3 &amp;&amp; !isLifting) || (selectedCell == 4 &amp;&amp; !isLifting) || selectedCell == 5);
+}
+
+
+
+/*
+    this function moves the robot by updating his position on the grid
+*/
+void move(){
+    if(moveDown == 0 &amp;&amp; moveRight == 0){
+        return;
+    }
+    else{
+        waiting = 0;
+        
+        /* Restore the previous value of the grid */
+        if (grid[botPosition[0]][botPosition[1]] == 1 || (isLifting &amp;&amp; preGridValue != 3)) {
+            grid[botPosition[0]][botPosition[1]] = preGridValue;
+        }
+        else if (grid[botPosition[0]][botPosition[1]] == 6) {
+            grid[botPosition[0]][botPosition[1]] = 2;
+        }
+        else if (grid[botPosition[0]][botPosition[1]] == 7) {
+
+            grid[botPosition[0]][botPosition[1]] = 5*(botPosition[0] == deliveryPoint[0] &amp;&amp; botPosition[1] == deliveryPoint[1]) + 3* (!isLifting &amp;&amp; preGridValue != 5);
+            
+            /*if (botPosition[0] == deliveryPoint[0] &amp;&amp; botPosition[1] == deliveryPoint[1])
+                grid[botPosition[0]][botPosition[1]] = 5;
+            else if (preGridValue == 3 &amp;&amp; isLifting) {
+                grid[botPosition[0]][botPosition[1]] = 0;
+            }
+            else {
+                grid[botPosition[0]][botPosition[1]] = 3;
+            }*/
+        }
+        
+        botPosition[0] += moveDown;
+        botPosition[1] += moveRight;
+        
+    }
+
+    // update the grid
+    preGridValue = grid[botPosition[0]][botPosition[1]];
+
+    grid[botPosition[0]][botPosition[1]] = (preGridValue + 4)*(preGridValue == 2 || preGridValue == 3) + 4 * (preGridValue == 4) + 7 * isLifting + (preGridValue == 0 &amp;&amp; !isLifting);
+    
+    /*if (preGridValue == 2) {
+        grid[botPosition[0]][botPosition[1]] = 6;
+    }
+    else if (preGridValue == 3 || isLifting) {
+        grid[botPosition[0]][botPosition[1]] = 7;
+    }
+    else if (preGridValue != 4) {
+        grid[botPosition[0]][botPosition[1]] = 1;
+    }
+    else {
+        grid[botPosition[0]][botPosition[1]] = 4;
+    }*/
+}
+
+bool checkLine(int line, int limit0, int limit1) {
+    int cellCheck;
+    if (limit0 &gt; limit1) {
+        limit0 += limit0;
+        limit0 = limit1 - limit0;
+        limit1 -= limit0;
+    }
+    for (cellCheck = limit0; cellCheck &lt;= limit1; cellCheck++) {
+        if (grid[line][cellCheck] != 0) {
+            return false;
+        }
+    }
+    return true;
+}
+
+void setPodPosition(){
+    podPosition[0] = tmpCommunicatePodToBot[0];
+    podPosition[1] = tmpCommunicatePodToBot[1];
+}
+
+
+
+bool checkArrived(int destination[2]) {
+    return (botPosition[0] == destination[0] &amp;&amp; botPosition[1] == destination[1]);
+}
+
+
+
+
+
+
+// NEW GRID
+/*     The change is to consider the entry point in 0,0 instead of 9,0. This will allow simpler controll of robot trajectories
+    It is even quiet generalizable because the requirements we ask are:
+    --    The entry point is in the bottom line and in the left half (More precisely: entryPoint = 9, [0:m-3]
+    --    Delivery point is in the top line
+    --    There is at least a 3-tile-large highway on the right.
+*/
+
+
+// FROM ENTRY TO POD POSITION
+/*
+void entryToPod() {
+    moveDown = -checkPositions(0) * (botPosition[0] &gt; podPosition[0]);
+    /*moveRight = 0;*/
+
+/*    if (botPosition[0] &gt;= 2) {
+        moveDown *= !(grid[botPosition[0]-2][botPosition[1]] == 7 ||grid[botPosition[0]-2][botPosition[1]+1] == 7);
+    }
+
+    /*if (botPosition[0] &gt; podPosition[0]) {
+        moveDown = -checkPositions(0);
+        if (botPosition[0] &gt;= 2) {
+            if (grid[botPosition[0]-2][botPosition[1]] == 7 ||grid[botPosition[0]-2][botPosition[1]+1] == 7) {moveDown = 0;}
+        }
+    }*/
+
+/*    moveRight = checkPositions(1) * ((botPosition[1] &lt; podPosition[1]) &amp;&amp; moveDown == 0);
+
+    /*else if (botPosition[1] &lt; podPosition[1]) {
+        moveRight = checkPositions(1);
+    }*/
+/*    move();
+}
+*/
+
+
+void entryToPod() {
+    if (botPosition[1] &gt; 0 &amp;&amp; botPosition[0] == n-1 ) {
+        moveDown = 0;
+        moveRight = -checkPositions(3);
+        move();
+        return;
+    }
+    moveDown = -checkPositions(0) * (botPosition[0] &gt; podPosition[0]);
+    /*moveRight = 0;*/
+
+    if (botPosition[0] &gt;= 2) {
+        moveDown *= !(grid[botPosition[0]-2][botPosition[1]] == 7 ||grid[botPosition[0]-2][botPosition[1]+1] == 7);
+    }
+
+    /*if (botPosition[0] &gt; podPosition[0]) {
+        moveDown = -checkPositions(0);
+        if (botPosition[0] &gt;= 2) {
+            if (grid[botPosition[0]-2][botPosition[1]] == 7 ||grid[botPosition[0]-2][botPosition[1]+1] == 7) {moveDown = 0;}
+        }
+    }*/
+
+    moveRight = checkPositions(1) * ((botPosition[1] &lt; podPosition[1]) &amp;&amp; moveDown == 0);
+
+    /*else if (botPosition[1] &lt; podPosition[1]) {
+        moveRight = checkPositions(1);
+    }*/
+    move();
+}
+
+
+
+// FROM POD POSITION TO DELIVERY
+void podToDelivery() {
+    moveDown = 0;
+    moveRight = 0;
+    if (botPosition[0] == podPosition[0] &amp;&amp; botPosition[1] == podPosition[1]) {
+        /* Check the line and see if it is clear */
+        moveDown = (-1 + 2*(botPosition[0]==0)) * (checkLine(botPosition[0] + 1 - 2*(botPosition[0]!=0), botPosition[1], deliveryPoint[1] - 2));
+        /*if (checkLine(botPosition[0] + 1 - 2*(botPosition[0]!=0), botPosition[1], deliveryPoint[1] - 2)) {moveDown = -1 + 2*(botPosition[0]==0);}*/
+    }
+    else if (botPosition[1] &lt; m - 2 &amp;&amp; botPosition[0] != deliveryPoint[0]) {moveRight = checkPositions(1);} 
+    else if (botPosition[1] == m - 2 &amp;&amp; botPosition[0] != deliveryPoint[0]) {
+        moveRight = (grid[botPosition[0]][botPosition[1]+1] == 0);
+        moveDown = checkPositions(2)*(moveRight == 0);
+    }
+    else if (botPosition[1] == m-1 &amp;&amp; botPosition[0] != deliveryPoint[0]) {moveDown = -checkPositions(0);}
+    else if (botPosition[0] == deliveryPoint[0]) {moveRight = -checkPositions(3);}
+    move();
+}
+
+/*void podToDelivery() {
+    moveDown = 0;
+    moveRight = 0;
+    if (botPosition[0] == podPosition[0] &amp;&amp; botPosition[1] == podPosition[1]) {
+        /* Check the line and see if it is clear */
+        /*moveDown = (-1 + 2*(botPosition[0]==0)) * (checkLine(botPosition[0] + 1 - 2*(botPosition[0]!=0), botPosition[1], deliveryPoint[1] - 2));
+        /*if (checkLine(botPosition[0] + 1 - 2*(botPosition[0]!=0), botPosition[1], deliveryPoint[1] - 2)) {moveDown = -1 + 2*(botPosition[0]==0);}*/
+    /*}
+    else if (botPosition[1] &lt; deliveryPoint[1] - 1) {moveRight = checkPositions(1);} 
+    else if (botPosition[1] == deliveryPoint[1] - 1) {
+        moveRight = (grid[botPosition[0]][botPosition[1]+1] == 0);
+        moveDown = checkPositions(2)*(moveRight == 0);
+    }
+    else if (botPosition[1] == deliveryPoint[1]) {moveDown = -checkPositions(0);}
+    move();
+}*/
+
+
+
+
+// FROM DELIVERY TO POD POSITION
+void deliveryToPod() {
+    moveDown = 0;
+    moveRight = 0;
+    if (botPosition[1] &gt;= m - 2) {
+        moveRight = -checkPositions(3);
+    }
+    else if (botPosition[0] &lt; podPosition[0] - 2) {
+        moveDown = checkPositions(2);
+    }
+    else if (botPosition[0] == podPosition[0] - 2 || botPosition[0] == podPosition[0]) {
+        moveDown = checkPositions(2) * (checkLine(botPosition[0] + 1, 0, botPosition[1]));
+        /*if (checkLine(botPosition[0] + 1, 0, botPosition[1])) {
+            moveDown = checkPositions(2);
+        }*/
+    }
+    else if (botPosition[1] &gt; podPosition[1]) {
+        moveRight = -checkPositions(3);
+    } 
+    else if (botPosition[1] == podPosition[1]) {
+        moveDown = (podPosition[0] - botPosition[0])*checkPositions(1 + (podPosition[0] - botPosition[0]));
+    }
+    move();
+}
+
+
+
+// FROM POD POSTION TO ENTRY
+void podToEntry() {
+    /*moveDown = checkPositions(2)*(botPosition[0] &lt; entryPoint[0]);
+    moveRight = -checkPositions(3)*(botPosition[0] &gt;= entryPoint[0]);*/
+
+    moveRight = -checkPositions(3)*(botPosition[1] &gt; entryPoint[1]) + checkPositions(1)*(botPosition[1] &lt; entryPoint[1]);
+    moveDown = checkPositions(2)*(botPosition[1] == entryPoint[1]);
+    
+
+
+    if (moveDown == 0 &amp;&amp; moveRight == 0 &amp;&amp; botPosition[1] == entryPoint[1]) {
+        waiting ++;
+        moveRight = -checkPositions(3)*(waiting == 2);
+        moveRight += checkPositions(1)*(moveRight==0)*(waiting == 2);
+        waiting -= 2*(waiting==2);
+    }
+    else if (moveDown == 0 &amp;&amp; moveRight == 0) {
+        waiting ++;
+        moveDown = checkPositions(2)*(waiting == 2);
+        moveDown -= checkPositions(0)*(moveDown==0)*(waiting == 2);
+        waiting -= 2*(waiting==2);
+    }
+    move();
+}
+
+void chooseStrategy() {
+    if (strategy == 0) {
+        entryToPod();
+        isLifting = checkArrived(podPosition);
+        strategy += isLifting;
+    }
+    else if (strategy == 1) {
+        podToDelivery();
+    }
+    else if (strategy == 2) {
+        deliveryToPod();
+        isLifting = !checkArrived(podPosition);
+        strategy += !isLifting;
+        grid[botPosition[0]][botPosition[1]] -= !isLifting;
+    }
+    else if (strategy == 3) {
+        podToEntry();
+    }
+
+}</declaration>
+		<location id="id0" x="1275" y="-425">
+			<name x="1190" y="-450">idle</name>
+			<label kind="exponentialrate" x="1173" y="-433">lambdaBot</label>
+		</location>
+		<location id="id1" x="1844" y="-425">
+			<name x="1861" y="-425">claimed</name>
+			<label kind="invariant" x="1861" y="-408">timer &lt;= K</label>
+		</location>
+		<location id="id2" x="1844" y="-161">
+			<name x="1870" y="-170">delivered</name>
+		</location>
+		<location id="id3" x="1275" y="-161">
+			<name x="1292" y="-195">returning</name>
+			<label kind="invariant" x="1292" y="-153">timer &lt;= K</label>
+		</location>
+		<init ref="id0"/>
+		<transition>
+			<source ref="id1"/>
+			<target ref="id1"/>
+			<label kind="guard" x="2057" y="-561">!checkArrived(deliveryPoint) &amp;&amp; timer &gt;= K</label>
+			<label kind="assignment" x="2057" y="-544">chooseStrategy(),
+timer = 0</label>
+			<nail x="1844" y="-578"/>
+			<nail x="2048" y="-578"/>
+			<nail x="2048" y="-425"/>
+		</transition>
+		<transition>
+			<source ref="id3"/>
+			<target ref="id3"/>
+			<label kind="guard" x="1079" y="0">!checkArrived(entryPoint) &amp;&amp; timer &gt;= K</label>
+			<label kind="assignment" x="1079" y="17">chooseStrategy(),
+timer = 0</label>
+			<nail x="1071" y="-161"/>
+			<nail x="1071" y="-8"/>
+			<nail x="1275" y="-8"/>
+		</transition>
+		<transition>
+			<source ref="id0"/>
+			<target ref="id1"/>
+			<label kind="guard" x="1513" y="-510">nTask &gt; 0</label>
+			<label kind="synchronisation" x="1513" y="-493">claim[ID]!</label>
+			<label kind="assignment" x="1513" y="-476">setPodPosition(),
+timer = 0</label>
+			<nail x="1619" y="-425"/>
+		</transition>
+		<transition>
+			<source ref="id3"/>
+			<target ref="id0"/>
+			<label kind="guard" x="1280" y="-340">checkArrived(entryPoint) &amp;&amp; timer &gt;= K</label>
+			<label kind="assignment" x="1283" y="-323">timer = 0,
+strategy = 0,
+prog ++</label>
+		</transition>
+		<transition>
+			<source ref="id2"/>
+			<target ref="id3"/>
+			<label kind="synchronisation" x="1589" y="-161">pickUp?</label>
+			<label kind="assignment" x="1589" y="-144">timer = 0,
+strategy ++</label>
+		</transition>
+		<transition>
+			<source ref="id1"/>
+			<target ref="id2"/>
+			<label kind="guard" x="1844" y="-306">checkArrived(deliveryPoint) &amp;&amp; timer &gt;= K</label>
+			<label kind="synchronisation" x="1895" y="-289">podDelivered!</label>
+		</transition>
+	</template>
+	<template>
+		<name>QUEUE</name>
+		<declaration>/*
+    When a new task is available, the template TASK send a newTask! and the queue collect the new task
+    When a bot is idle, it sends a claim! to get the next task in the queue
+    If a the queue receives a newTask and it is already full, it reaches a deadlock state
+
+    The temporary variable tmpCommunicatePodToBot is used to communicate the chosen pod to the bot
+    The temporary variable tmpPodChosenByTask is used to receive the pod chosen by the task template and append it to queueList
+*/
+
+
+int queueList[maxT][2];
+int discarded = 0;
+
+
+void initQueue(){
+    int j;
+    for (j = 0; j&lt;maxT; j++){queueList[j][0] = -1; queueList[j][1] = -1;}
+}
+
+void append(int k[2]) {
+    int j;
+    for (j = 0; j&lt;maxT; j++) {
+        if (queueList[j][0] == -1){
+            queueList[j] = k;
+            return;
+        }
+    }
+}
+
+void pop() {
+    int j;
+    for (j = 0; j&lt;maxT; j++) {
+        if (j &lt; maxT - 1) {queueList[j] = queueList[j+1];}
+        else {queueList[j][0] = -1; queueList[j][1] = -1;}
+    }
+}</declaration>
+		<location id="id4" x="-425" y="8">
+			<name x="-435" y="-26">start</name>
+			<committed/>
+		</location>
+		<location id="id5" x="-161" y="8">
+			<name x="-229" y="17">Working</name>
+		</location>
+		<init ref="id4"/>
+		<transition>
+			<source ref="id5"/>
+			<target ref="id5"/>
+			<label kind="guard" x="59" y="-25">nTask &gt;= maxT</label>
+			<label kind="synchronisation" x="59" y="-8">newTask?</label>
+			<label kind="assignment" x="59" y="8">grid[tmpPodChosenByTask[0]][tmpPodChosenByTask[1]]--,
+discarded ++</label>
+			<nail x="42" y="93"/>
+			<nail x="42" y="-85"/>
+		</transition>
+		<transition>
+			<source ref="id5"/>
+			<target ref="id5"/>
+			<label kind="select" x="-153" y="-187">i : bot_t</label>
+			<label kind="guard" x="-153" y="-170">nTask &gt; 0</label>
+			<label kind="synchronisation" x="-153" y="-153">claim[i]?</label>
+			<label kind="assignment" x="-153" y="-136">pop() ,nTask--,
+tmpCommunicatePodToBot = queueList[0]</label>
+			<nail x="-161" y="-94"/>
+			<nail x="42" y="-94"/>
+		</transition>
+		<transition>
+			<source ref="id5"/>
+			<target ref="id5"/>
+			<label kind="guard" x="-153" y="161">nTask &lt; maxT</label>
+			<label kind="synchronisation" x="-153" y="110">newTask?</label>
+			<label kind="assignment" x="-153" y="127">append(tmpPodChosenByTask), 
+nTask++, tmpCommunicatePodToBot = queueList[0]</label>
+			<nail x="-161" y="110"/>
+			<nail x="42" y="110"/>
+		</transition>
+		<transition>
+			<source ref="id4"/>
+			<target ref="id5"/>
+			<label kind="assignment" x="-357" y="8">initQueue(),
+gridInitialization()</label>
+		</transition>
+	</template>
+	<template>
+		<name>TASK</name>
+		<parameter> double muT, double sigmaT</parameter>
+		<declaration>/*
+    This template should be used to define the evolution of a single task
+    When the a new task is added the template choses the corresponding pod randomly among the available ones
+    First implementation: a new task arrives every T seconds (constant value)
+    Future implementation: T is a sample of a normal distribution
+
+    IMPORTANT: What to do if no pod is available?
+    SOLUTION: If no pod is available Task returns to idle without doing anything. After another T-second interval it will try to send another request
+*/
+
+clock timer;
+int avPods[podCounter][2]; /*The amatrix is oversized because it considers there could be a pod for every spot of the grid. Consider adding a parameter for the total number of pods */
+int[0, podCounter] avPods_quantity = 0; /*Number of available pods*/
+int chosenPod[2];
+double delayTask;
+
+void init_avPods () {
+    int i;
+    for (i = 0; i &lt; podCounter; i++) {
+        avPods[i][0] = -1;
+        avPods[i][1] = -1;
+    }
+}
+
+void checkAv () { /*Function to check which pods are available*/
+    int i,j;
+    for (i = 0; i &lt; n; i++) {
+        for (j = 0; j &lt; m; j++) {
+            if (grid[i][j] == 2 || grid[i][j] == 6) {
+                avPods[avPods_quantity][0] = i;
+                avPods[avPods_quantity][1] = j;
+                avPods_quantity ++;
+            }
+        }
+    }
+}
+
+void choosePod(int i) {
+    chosenPod = avPods[i % avPods_quantity];
+}
+
+double f() {
+    return Normal(muT, sigmaT);
+}</declaration>
+		<location id="id6" x="-178" y="-170">
+			<name x="-153" y="-170">idle</name>
+			<label kind="invariant" x="-161" y="-153">timer &lt;= delayTask</label>
+		</location>
+		<location id="id7" x="-552" y="-170">
+			<name x="-562" y="-204">startingTask</name>
+			<committed/>
+		</location>
+		<init ref="id7"/>
+		<transition>
+			<source ref="id7"/>
+			<target ref="id6"/>
+			<label kind="assignment" x="-459" y="-187">timer = 0, init_avPods(),
+delayTask = f()</label>
+		</transition>
+		<transition>
+			<source ref="id6"/>
+			<target ref="id6"/>
+			<label kind="select" x="42" y="-160">i: int[0,podCounter]</label>
+			<label kind="guard" x="42" y="-143">timer == delayTask</label>
+			<label kind="synchronisation" x="42" y="-177">newTask!</label>
+			<label kind="assignment" x="42" y="-127">checkAv(),
+choosePod(i),
+init_avPods(), timer = 0,
+tmpPodChosenByTask = chosenPod,
+grid[chosenPod[0]][chosenPod[1]]++,
+avPods_quantity = 0, 
+chosenPod[0] = 0, chosenPod[1] = 0,
+delayTask = f()</label>
+			<nail x="-178" y="25"/>
+			<nail x="25" y="25"/>
+			<nail x="25" y="-170"/>
+		</transition>
+	</template>
+	<template>
+		<name>HUMAN</name>
+		<parameter>double muH, double sigmaH</parameter>
+		<declaration>/* 
+    The human operator waits for a pod that communicates that a pod has been delivered.
+    After receiveing the message he stays in busy for H seconds and after that communicates to the robot it is free to go
+*/
+
+clock timer;
+/* Setting timer equal to  when it is not used should speed up the simulation*/
+
+double delayHuman;
+double f() { 
+    return Normal(muH, sigmaH);
+}</declaration>
+		<location id="id8" x="-323" y="-34">
+			<name x="-374" y="-43">free</name>
+		</location>
+		<location id="id9" x="0" y="-34">
+			<name x="17" y="-51">busy</name>
+			<label kind="invariant" x="17" y="-34">timer &lt;= delayHuman</label>
+		</location>
+		<init ref="id8"/>
+		<transition>
+			<source ref="id9"/>
+			<target ref="id8"/>
+			<label kind="guard" x="-212" y="-170">timer == delayHuman</label>
+			<label kind="synchronisation" x="-212" y="-153">pickUp!</label>
+			<label kind="assignment" x="-212" y="-119">timer = 0</label>
+			<nail x="0" y="-119"/>
+			<nail x="-323" y="-119"/>
+		</transition>
+		<transition>
+			<source ref="id8"/>
+			<target ref="id9"/>
+			<label kind="synchronisation" x="-229" y="59">podDelivered?</label>
+			<label kind="assignment" x="-229" y="76">timer = 0,
+delayHuman = f()</label>
+			<nail x="-323" y="51"/>
+			<nail x="0" y="51"/>
+		</transition>
+	</template>
+	<system>queue = QUEUE();
+task = TASK(50.0, 5.0); // tasks generator
+human  = HUMAN(50.0, 3.0);
+system queue, task, human, BOT;
+progress {prog;}</system>
+	<queries>
+		<query>
+			<formula>simulate[&lt;= 1000;1]{nTask, task.delayTask, BOT(0).botPosition[0], BOT(0).botPosition[1], BOT(0).idle}</formula>
+			<comment></comment>
+		</query>
+		<query>
+			<formula>Pr[&lt;=1500](&lt;&gt;(queue.discarded &gt; 0))</formula>
+			<comment></comment>
+		</query>
+	</queries>
+</nta>
