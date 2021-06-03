@@ -1,3 +1,5 @@
+% 
+
 \documentclass[10pt,a4paper]{article}
 
 \usepackage{float}
@@ -5,12 +7,48 @@
 \usepackage{amsmath}
 \usepackage{array}
 
-\title{Model Checking of Warehouse Robotics}
+\title{Stochastic Model Checking of Warehouse Robotics}
 \author{Corti Simone, Ravella Elia, Sarneri Enrico}
 \begin{document}
 	\begin{titlepage}
 		\maketitle
 	\end{titlepage}
+	
+	\section{The Model}
+		\subsection{Grid}
+		
+		\subsection{Bot}
+			\subsubsection{Movement}
+		
+		\subsection{Queue}
+			The Queue template models the mechanism to manage the arriving of new tasks in the system and their dispatching to the bots. It also carries out the grid initialization.\\
+			It is composed of two states:
+			\begin{itemize}
+				\item An initial \emph{start} state that we made also committed to carry out the queue and grid initializations; originally, the setting of the grid were carried out by a dedicated template, but since it was the only operation in that process we removed it and integrated in this one in order to simplify the model.
+				\item A \emph{working} state, that groups the functions of
+					\begin{enumerate}
+						\item Adding a task to the queue
+						\item Removing a task from the queue when it's been claimed by a bot
+						\item Keeping count of how many tasks has been issued, how many tasks are executed and how many tasks have been lost
+					\end{enumerate}
+					This last function is crucial, because the property that must hold in the system throughout the whole test run will directly address the number of tasks that have been lost managed by this process.
+			\end{itemize}
+			We have initally modeled this template with a state dedicated to each one of the function listed above, then we progressively removed the states "embedding" their functionalities in the transitions and grouping them together. This was done in order to reduce the number of states to verify and improve the verification time. 
+		
+		\subsection{Task and Human}
+			The Task template models the generation process of new tasks. Its parameters sets the values of mean and standard deviation of the normal distribution associated to the "spawn rate" of new tasks.\\
+			It's composed of two states:
+			\begin{itemize}
+				\item A \emph{startingTask} initial commit state that is in charge of initializing the additional data structures of the model, such as the list of available pods.
+				\item An \emph{idle} state that just sends tokens on the channel \emph{newTask} at random interval of time (according to the distribution specified).
+			\end{itemize}
+			
+	
+	\section{System Configurations}
+	
+	\section{Experimental Results}
+	
+	\section{Further Improvement and Alternative Approaches}
 	
 	
 \end{document}
