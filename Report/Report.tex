@@ -9,6 +9,9 @@
 		\maketitle
 	\end{titlepage}
 	
+	\tableofcontents
+	\clearpage
+	
 	\section{The Model}
 		\subsection{Grid}
 			The grid is implemented as a global bidimensional array of integers. This implementation allowed us to manage in a detailed way the single cells, and also helped us simplify the movement of the bots. We did not insert a template Grid because this would have required the introduction of many additional synchronization channels and would have been very difficult to integrate with other templates.
@@ -77,9 +80,56 @@
 				\item A \emph{startingTask} initial commit state that is in charge of initializing the additional data structures of the model, such as the list of available pods.
 				\item An \emph{idle} state that just sends tokens on the channel \emph{newTask} at random interval of time (according to the distribution specified).
 			\end{itemize}
-			
 	
 	\section{System Configurations}
+		We've prepared 2 configurations for the test, one that actually proves the searched property in the confidence interval we defined, and the other that instead failed to do so. When looking for the failing configuration, we modified the parameters that would actually stress the system, while leaving untouched the overall layout of the warehouse.\\
+		This parameters do not change between configurations:
+		\begin{center}
+				\begin{tabular}{ |c|c|c|}
+					\hline
+					Parameter & Value & Additional notes\\
+					\hline
+					\hline
+					Grid width & 15 &\\
+					\hline
+					Grid lenght & 20 &\\
+					\hline
+					Number of pods per row & 11 &\\
+					\hline
+					Space between rows & 2 &\\
+					\hline
+					Entry point position & (19, 11) &\\
+					\hline
+					Delivery point position & (0, 14) &\\
+					\hline
+				\end{tabular}
+			\end{center}
+		
+		
+		\subsection{Succeding Configuration}
+			\begin{center}
+				\begin{tabular}{ |c|c|c|}
+					\hline
+					Parameter & Value & Additional notes\\
+					\hline
+					\hline
+					Number of bots &&\\
+					\hline
+					Queue maximum lenght &&\\
+					\hline
+					Exponential's lambda for the bot response time &&\\
+					\hline
+					Spawn rate of tasks &&\\
+					\hline					
+					Variance of human response time &&\\
+					\hline
+					Mean human response time &&\\
+					\hline
+					
+				\end{tabular}
+			\end{center}
+			
+		\subsection{Failing Configuration}
 	
 	\section{Experimental Results}
 	
