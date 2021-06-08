@@ -1,6 +1,7 @@
 \documentclass[10pt,a4paper]{article}
 
 \usepackage{enumitem}
+\usepackage{graphicx}
 
 \title{Stochastic Model Checking of Warehouse Robotics}
 \author{Corti Simone, Ravella Elia, Sarneri Enrico}
@@ -56,6 +57,12 @@
 				\begin{itemize}
 					\item \emph{From entry point to pod position} the bot goes to the lower left corner, reaches the row corresponding to bot one and, at the ene, goes left until it reaches the pod postion.\\This strategy features an \emph{anti-starvation} control to avoid unpredicted deadlocks. After reaching the pod position, the function increases by 1 the int \emph{strategy} and the boolean variable \emph{isLifting} becomes true;
 					\item \emph{From pod position to delivery point} the bot follows a different strategy: after checking if the near row is free, it goes up and then left until it reaches the penultima column. Here, the bot checks wheter the cell to its left is free. If so, it goes to the left and,then, it will go up until it reaches the delivery point; otherwise it goes down and repeats this procedure at the next move.\\This system has been implemented to create an ordered queue of bot to avoid deadlocks in case of many bots inside the grid. Once it reaches the delivery point, the bot send a \emph{podDelivered} message to the human;
+					\begin{figure}
+						\centering
+						\includegraphics[scale = 0.5]{Images/BotMovement1.JPG}
+						\caption{Example of bot movement between entry and delivery point}
+					\end{figure}
+					\item \emph{From delivery point to pod position} the bot goes right until it reaches the ${(m-2)}^{th}$ column. Then it goes down until it reaches the line before the one it must get in. Here, the bot checks wheter the line is free. If so, it goes to the pod position following a straight path.
 				\end{itemize}
 		
 		\subsection{Queue}
