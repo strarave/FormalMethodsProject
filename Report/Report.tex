@@ -46,7 +46,7 @@
 			It accepts as input parameter the custom-type variable $bot_t$, which represents the ID assigned to the bot.\\
 			The template is compesed of the following states:
 			\begin{itemize}
-				\item \textbf{\underline{Idle}}: this is the initial state of the template and it models the bot when it has no claimed task.\\The bot may leave this state when the number of available tasks is greater than zero. Furthermore, the probability that the bot is leaving the states is modeled as an exponential distribution with $\chi\;\sim\;(\lambda)$;
+				\item \textbf{\underline{Idle}}: this is the initial state of the template and it models the bot when it has no claimed task.\\The bot may leave this state when the number of available tasks is greater than zero. Furthermore, the probability that the bot is leaving the states is modeled as an exponential distribution with $\chi\;\sim\;(\lambda_{bot})$;
 				\item \textbf{\underline{Claimed}}: this state represents the bot after it claimed a task from the queue until it reaches the delivery point. The bot is forced to leave the state after \emph{K} seconds;
 				\item \textbf{\underline{Delivered}}: the bot reaches this state when its position coincides whit the delivery point. The bot stays in the state until it recevies a \emph{PickUp} message from the \emph{Human};
 				\item \textbf{\underline{Returning}}: after leaving the delivery point, the bot returns back to the \emph{pod position} and, after this, it goes back to the \emph{entry point}. As in claimed, the bot must leave the state after \emph{K} seconds.
@@ -58,14 +58,14 @@
 				\begin{itemize}
 					\item \emph{From entry point to pod position} the bot goes to the lower left corner, reaches the row corresponding to bot one and, at the ene, goes left until it reaches the pod postion.\\This strategy features an \emph{anti-starvation} control to avoid unpredicted deadlocks. After reaching the pod position, the function increases by 1 the int \emph{strategy} and the boolean variable \emph{isLifting} becomes true;
 					\item \emph{From pod position to delivery point} the bot follows a different strategy: after checking if the near row is free, it goes up and then left until it reaches the penultima column. Here, the bot checks wheter the cell to its left is free. If so, it goes to the left and,then, it will go up until it reaches the delivery point; otherwise it goes down and repeats this procedure at the next move.\\This system has been implemented to create an ordered queue of bot to avoid deadlocks in case of many bots inside the grid. Once it reaches the delivery point, the bot send a \emph{podDelivered} message to the human;
-					\begin{figure}[h]
+					\begin{figure}[ht]
 						\centering
 						\includegraphics[scale = 0.36]{Images/BotMovement1.JPG}
 						\caption{Example of bot movement between entry and delivery point}
 					\end{figure}
 					\item \emph{From delivery point to pod position} the bot goes right until it reaches the ${(m-2)}^{th}$ column. Then it goes down until it reaches the line before the one it must get in. Here, the bot checks wheter the line is free. If so, it goes to the pod position following a straight path.
 					\item \emph{From pod position to the entry point} the bot moves horizontally until it reaches the column corresponding to the entry point. After that, it goes down until it reaches its destination.\footnote{To avoid possible soft locking situations, in case the entry poitn is on the first column, the bot stops its horizontal movement at the second column, then it goes down, and eventually it moves to the right to reach the entry point.}
-					\begin{figure}[h]
+					\begin{figure}[ht]
 						\centering
 						\includegraphics[scale = 0.36]{Images/BotMovement2.JPG}
 						\caption{Example of bot movement between delivery and entry point}
@@ -96,8 +96,8 @@
 			\end{itemize}
 	
 	\section{System Configurations}
-		We've prepared 2 configurations for the test, one that actually proves the searched property in the confidence interval we defined, and the other that instead failed to do so. When looking for the failing configuration, we modified the parameters that would actually stress the system, while leaving untouched the overall layout of the warehouse.\\
-		This parameters do not change between configurations:
+		We have prepared 4 configurations for the test, the first one that actually fails in proving the searched property in the confidence interval we defined, and the other ones that try to fix the model changing every time a key parameter. In particular, we will try changing the human responsiveness, the number of bots and the time between two tasks.\\
+		These parameters do not change among the various configurations:
 		\begin{center}
 				\begin{tabular}{ |c|c|c|}
 					\hline
@@ -106,44 +106,112 @@
 					\hline
 					Grid width & 15 &\\
 					\hline
-					Grid lenght & 20 &\\
+					Grid height & 20 &\\
 					\hline
 					Number of pods per row & 11 &\\
 					\hline
-					Space between rows & 2 &\\
+					Space between rows & 1 &\\
 					\hline
-					Entry point position & (19, 11) &\\
+					Entry point position & (19, 3) &\\
 					\hline
 					Delivery point position & (0, 14) &\\
 					\hline
+					Maximumm queue length & 3 &\\
+					\hline
+					Robot movement speed & 1 &\\
+					\hline
+					Robot exponential parameter $\lambda_{bot}$ & 10 &\\
+					\hline
 				\end{tabular}
 			\end{center}
+			\begin{figure}[ht]
+				\centering
+					\includegraphics[scale = 0.4]{Images/Grid.jpg}
+					\caption{Grid used for simulation}
+			\end{figure}
+
 		
 		
-		\subsection{Succeding Configuration}
+		\subsection{First Configuration - Failing}
 			\begin{center}
 				\begin{tabular}{ |c|c|c|}
 					\hline
 					Parameter & Value & Additional notes\\
 					\hline
 					\hline
-					Number of bots &&\\
+					Number of bots & 8 &\\
 					\hline
-					Queue maximum lenght &&\\
-					\hline
-					Exponential's lambda for the bot response time &&\\
-					\hline
-					Spawn rate of tasks &&\\
+					Task spawn rate - expected value $\mu_t$ & 70 &\\
 					\hline					
-					Variance of human response time &&\\
+					Task spawn rate - standard deviation $\sigma_t$ & 5 &\\
 					\hline
-					Mean human response time &&\\
+					Human response time - expected value $\mu_H$ & 100 &\\
+					\hline					
+					Human response time - standard deviation $\sigma_H$ & 20 &\\
 					\hline
-					
 				\end{tabular}
 			\end{center}
+		
+		\subsection{Second Configuration - Successful}
+			\begin{center}
+				\begin{tabular}{ |c|c|c|}
+					\hline
+					Parameter & Value & Additional notes\\
+					\hline
+					\hline
+					Number of bots & 8 &\\
+					\hline
+					Task spawn rate - expected value $\mu_t$ & 70 &\\
+					\hline					
+					Task spawn rate - standard deviation $\sigma_t$ & 5 &\\
+					\hline
+					Human response time - expected value $\mu_H$ & \textbf{60}\footnotemark &\\
+					\hline					
+					Human response time - standard deviation $\sigma_H$ & \textbf{5} &\\
+					\hline
+				\end{tabular}
+			\end{center}
+			\footnotetext{Bold numbers represent parameter changed with respect to the first configuration}	
 			
-		\subsection{Failing Configuration}
+		\subsection{Third Configuration - Failing}
+			\begin{center}
+				\begin{tabular}{ |c|c|c|}
+					\hline
+					Parameter & Value & Additional notes\\
+					\hline
+					\hline
+					Number of bots & \textbf{12} &\\
+					\hline
+					Task spawn rate - expected value $\mu_t$ & 70 &\\
+					\hline					
+					Task spawn rate - standard deviation $\sigma_t$ & 5 &\\
+					\hline
+					Human response time - expected value $\mu_H$ & 100 &\\
+					\hline					
+					Human response time - standard deviation $\sigma_H$ & 20 &\\
+					\hline
+				\end{tabular}
+			\end{center}
+
+		\subsection{Fourth Configuration - Possible Failure}
+			\begin{center}
+				\begin{tabular}{ |c|c|c|}
+					\hline
+					Parameter & Value & Additional notes\\
+					\hline
+					\hline
+					Number of bots & 8 &\\
+					\hline
+					Task spawn rate - expected value $\mu_t$ & \textbf{85} &\\
+					\hline					
+					Task spawn rate - standard deviation $\sigma_t$ & \textbf{10} &\\
+					\hline
+					Human response time - expected value $\mu_H$ & 100 &\\
+					\hline					
+					Human response time - standard deviation $\sigma_H$ & 20 &\\
+					\hline
+				\end{tabular}
+			\end{center}
 	
 	\section{Experimental Results}
 	
