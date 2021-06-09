@@ -526,13 +526,13 @@ delayHuman = f()</label>
 		</transition>
 	</template>
 	<system>queue = QUEUE();
-task = TASK(90.0, 10.0); // Model of the task generator. First value is muT, second value is sigmaT
+task = TASK(70.0, 15.0); // Model of the task generator. First value is muT, second value is sigmaT
 human  = HUMAN(100.0, 20.0); // // Model of the human. First value is muH, second value is sigmaH
 system queue, task, human, BOT;
 progress {prog;}</system>
 	<queries>
 		<query>
-			<formula>simulate[&lt;= 20000;1]{task.delayTask, human.delayHuman, queue.discarded, BOT(0).botPosition[0], BOT(0).botPosition[1]}</formula>
+			<formula>simulate[&lt;= 20000;1]{task.delayTask, human.delayHuman, queue.discarded, BOT(0).botPosition[0], BOT(0).botPosition[1], nTask}</formula>
 			<comment></comment>
 		</query>
 		<query>
