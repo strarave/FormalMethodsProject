@@ -117,28 +117,28 @@
 		We have prepared 4 configurations for the test, the first one that actually fails in proving the searched property in the confidence interval we defined, and the other ones that try to fix the model changing every time a key parameter. In particular, we will try changing the human responsiveness, the number of bots and the time between two tasks.\\
 		These parameters do not change among the various configurations:
 		\begin{center}
-				\begin{tabular}{ |c|c|c|}
+				\begin{tabular}{ |c|c|}
 					\hline
-					Parameter & Value & Additional notes\\
+					Parameter & Value \\
 					\hline
 					\hline
-					Grid width & 15 &\\
+					Grid width & 15\\
 					\hline
-					Grid height & 20 &\\
+					Grid height & 20\\
 					\hline
-					Number of pods per row & 11 &\\
+					Number of pods per row & 11\\
 					\hline
-					Space between rows & 1 &\\
+					Space between rows & 1 \\
 					\hline
-					Entry point position & (19, 3) &\\
+					Entry point position & (19, 3) \\
 					\hline
-					Delivery point position & (0, 14) &\\
+					Delivery point position & (0, 14) \\
 					\hline
-					Maximumm queue length & 3 &\\
+					Maximumm queue length & 3 \\
 					\hline
-					Robot movement speed & 2 &\\
+					Robot movement speed & 2 \\
 					\hline
-					Robot exponential parameter $\lambda_{bot}$ & 10 &\\
+					Robot exponential parameter $\lambda_{bot}$ & 10 \\
 					\hline
 				\end{tabular}
 			\end{center}
@@ -152,20 +152,20 @@
 		
 		\subsection{First Configuration - Failing}
 			\begin{center}
-				\begin{tabular}{ |c|c|c|}
+				\begin{tabular}{ |c|c|}
 					\hline
-					Parameter & Value & Additional notes\\
+					Parameter & Value \\
 					\hline
 					\hline
-					Number of bots & 8 &\\
+					Number of bots & 8\\
 					\hline
-					Task spawn rate - expected value $\mu_t$ & 70 &\\
+					Task spawn rate - expected value $\mu_t$ & 70\\
 					\hline					
-					Task spawn rate - standard deviation $\sigma_t$ & 15 &\\
+					Task spawn rate - standard deviation $\sigma_t$ & 15\\
 					\hline
-					Human response time - expected value $\mu_H$ & 100 &\\
+					Human response time - expected value $\mu_H$ & 100\\
 					\hline					
-					Human response time - standard deviation $\sigma_H$ & 20 &\\
+					Human response time - standard deviation $\sigma_H$ & 20\\
 					\hline
 				\end{tabular}
 			\end{center}
@@ -177,20 +177,20 @@
 		
 		\subsection{Second Configuration - Successful}
 			\begin{center}
-				\begin{tabular}{ |c|c|c|}
+				\begin{tabular}{ |c|c|}
 					\hline
-					Parameter & Value & Additional notes\\
+					Parameter & Value\\
 					\hline
 					\hline
-					Number of bots & 8 &\\
+					Number of bots & 8 \\
 					\hline
-					Task spawn rate - expected value $\mu_t$ & 70 &\\
+					Task spawn rate - expected value $\mu_t$ & 70\\
 					\hline					
-					Task spawn rate - standard deviation $\sigma_t$ & 15 &\\
+					Task spawn rate - standard deviation $\sigma_t$ & 15\\
 					\hline
-					Human response time - expected value $\mu_H$ & \textbf{60}\footnotemark &\\
+					Human response time - expected value $\mu_H$ & \textbf{60}\footnotemark\\
 					\hline					
-					Human response time - standard deviation $\sigma_H$ & \textbf{5} &\\
+					Human response time - standard deviation $\sigma_H$ & \textbf{5}\\
 					\hline
 				\end{tabular}
 			\end{center}
@@ -198,20 +198,20 @@
 			
 		\subsection{Third Configuration - Failing}
 			\begin{center}
-				\begin{tabular}{ |c|c|c|}
+				\begin{tabular}{ |c|c|}
 					\hline
-					Parameter & Value & Additional notes\\
+					Parameter & Value\\
 					\hline
 					\hline
-					Number of bots & \textbf{12} &\\
+					Number of bots & \textbf{12}\\
 					\hline
-					Task spawn rate - expected value $\mu_t$ & 70 &\\
+					Task spawn rate - expected value $\mu_t$ & 70\\
 					\hline					
-					Task spawn rate - standard deviation $\sigma_t$ & 5 &\\
+					Task spawn rate - standard deviation $\sigma_t$ & 5\\
 					\hline
-					Human response time - expected value $\mu_H$ & 100 &\\
+					Human response time - expected value $\mu_H$ & 100\\
 					\hline					
-					Human response time - standard deviation $\sigma_H$ & 20 &\\
+					Human response time - standard deviation $\sigma_H$ & 20\\
 					\hline
 				\end{tabular}
 			\end{center}
@@ -224,39 +224,24 @@
 
 		\subsection{Fourth Configuration - Possible Failure}
 			\begin{center}
-				\begin{tabular}{ |c|c|c|}
+				\begin{tabular}{ |c|c|}
 					\hline
-					Parameter & Value & Additional notes\\
+					Parameter & Value\\
 					\hline
 					\hline
-					Number of bots & 8 &\\
+					Number of bots & 8\\
 					\hline
-					Task spawn rate - expected value $\mu_t$ & \textbf{85} &\\
+					Task spawn rate - expected value $\mu_t$ & \textbf{85}\\
 					\hline					
-					Task spawn rate - standard deviation $\sigma_t$ & \textbf{10} &\\
+					Task spawn rate - standard deviation $\sigma_t$ & \textbf{10}\\
 					\hline
-					Human response time - expected value $\mu_H$ & 100 &\\
+					Human response time - expected value $\mu_H$ & 100\\
 					\hline					
-					Human response time - standard deviation $\sigma_H$ & 20 &\\
+					Human response time - standard deviation $\sigma_H$ & 20\\
 					\hline
 				\end{tabular}
 			\end{center}
 	
 	\section{Experimental Results}
-	
-	\section{Further Improvement and Alternative Approaches} % sì lo so non ho scritto un cazzo, domani (giovedì) finisco per bene tutto @Simone
-		We added this section in order to quickly describe the techniques we used to enhance the \emph{original} non stochastic formulation of the model, because most of them could have been further exploited in a non statistical system.
 		
-		\paragraph{Variable Reduction}
-			While this can seem like a normal practice to model, minimizing the number of the variables and reducing the variables "activity interval"\footnote{a variable v is called inactive in a location l, if along all paths starting from l, v will be reset before it will be used.} is fundamental to reduce the overall number of states that must be checked by the verifier, speeding up verification.
-			
-		\paragraph{Synchronous Value Passing}
-		
-		\paragraph{Select Statements Reduction}
-		
-		\paragraph{Symmetry Reduction}
-		
-		\paragraph{Sweep Line}
-		
-	
 \end{document}
