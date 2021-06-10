@@ -39,7 +39,7 @@
 				\item row lenght
 				\item space between rows
 			\end{itemize}
-			Unfortunately, Uppaal requires this parameters to be constant at compile time, so they have to be manually changed in the template. We would have preferred to parametrize them, so to have to modify only the global definition. 
+			Unfortunately, Uppaal requires these parameters to be constant at compile time, so they have to be manually changed in the template. We would have preferred to parametrize them, so to have to modify only the global definition. 
 			
 		
 		\subsection{Bot}
@@ -151,6 +151,7 @@
 		
 		
 		\subsection{First Configuration - Failing}
+			\label{sub:sim1}
 			\begin{center}
 				\begin{tabular}{ |c|c|c|}
 					\hline
@@ -173,6 +174,7 @@
 				\centering
 					\includegraphics[scale = 0.7]{Images/Simulation1}
 					\caption{Probability that a task is lost during simulation 1}
+					\label{fig:sim1}
 			\end{figure}
 		
 		\subsection{Second Configuration - Successful}
@@ -219,6 +221,7 @@
 				\centering
 					\includegraphics[scale = 0.7]{Images/Simulation3}
 					\caption{Probability that a task is lost during simulation 3}
+					\label{fig:sim3}
 			\end{figure}
 
 
@@ -241,8 +244,20 @@
 					\hline
 				\end{tabular}
 			\end{center}
+			\begin{figure}[H]
+				\centering
+					\includegraphics[scale = 0.6]{Images/Simulation4}
+					\caption{Probability that a task is lost during simulation 4}
+					\label{fig:sim4}
+			\end{figure}
 	
-	\section{Experimental Results}
+	\section{Result Discussion}
+			As we can see from the previous section, starting from an initial configuration gieven by parameters such as at point \ref{sub:sim1} leads to a failure, or, in other words, in a high probability of loosing a task.\\In order to avoid this, few parameter changes are made:
+			\begin{itemize}
+				\item {\textbf{\underline{Human Responsiveness}}: The effect of changing the time the human needs to complete his task has a huge impact on the probability of success. Indeed, having a human even slightly slower than the task spawn rate leads eventually to a task lost. On the other hand, if the human is faster than the spawn rate, the success probability depends only on the time bots need to deliver a pod;}
+				\item {\textbf{\underline{Bot Parameters}}: Changing the number of bot inside the grid has the only effect of postponing the time of a task lost. To see this, it is sufficient to compare figure \ref{fig:sim1} and \ref{fig:sim3}. Indeed, they share a very similar probability just translated along the \emph{x axis};}
+				\item {\textbf{\underline{Task Spawn Rate}}:}
+			\end{itemize}
 	
 	\section{Further Improvement and Alternative Approaches} % sì lo so non ho scritto un cazzo, domani (giovedì) finisco per bene tutto @Simone
 		We added this section in order to quickly describe the techniques we used to enhance the \emph{original} non stochastic formulation of the model, because most of them could have been further exploited in a non statistical system.
