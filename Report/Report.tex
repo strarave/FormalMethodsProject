@@ -96,10 +96,11 @@
 				\item \textbf{\underline{Delivered}}: the bot reaches this state when its position coincides with the delivery point. The bot stays in the state until it recevies a \emph{PickUp} message from the \emph{Human};
 				\item \textbf{\underline{Returning}}: after leaving the delivery point, the bot returns back to the \emph{pod position} and, after this, it goes back to the \emph{entry point}. As in claimed, the bot must leave the state after \emph{K} seconds.
 			\end{itemize}
-			When the pod is moving to reach its destination, it follows a predetermined path which will be explained in the following section.
+			When the pod is moving to reach its destination, it follows a predetermined path which will be explained in the following section.\\
+			Notice that, inside the bot template declarations, most of the operation are carried considering booleans as integers with value of 0 or 1. This is allowed by UPPAAL and helps to reduce the effective number of states to be explored. The reason behind this is that UPPAAL \emph{if-else statements} optimization is not advanced to enough to effectively deal with all the different possible paths we needed. 
 			
 			\subsubsection{Movement}
-				As we can see from the template, the movement of the robot is controlled by a function called \verb|chooseStrategy|. This function uses a parameter called \emph{strategy} to determine in which part of the path the robot is and to apply the corresponding movement function.\\
+				As we can see from the template, the movement of the robot is controlled by a function called \verb|chooseStrategy|. This function uses a parameter called \emph{strategy} to determine in which part of the path the robot is and to apply the corresponding movement function.
 				\begin{itemize}
 					\item \emph{From entry point to pod position} the bot goes to the lower left corner, reaches the row corresponding to pod one and, at the end, goes right until it reaches the pod postion.\\After reaching the pod position, the function increases by 1 the int \emph{strategy} and the boolean variable \emph{isLifting} becomes true;
 					\item \emph{From pod position to delivery point} the bot follows a different strategy: after checking if the near row is free, it goes up and then left until it reaches the penultima column. Here, the bot checks wheter the cell to its left is free. If so, it goes to the left and,then, it will go up until it reaches the delivery point; otherwise it goes down and repeats this procedure at the next move.\\This system has been implemented to create an ordered queue of bot to avoid deadlocks in case of many bots inside the grid. Once it reaches the delivery point, the bot send a \emph{podDelivered} message to the human;
