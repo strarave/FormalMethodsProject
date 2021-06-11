@@ -154,7 +154,7 @@
 			It is composed of two states:
 			\begin{itemize}
 				\item An initial committed \emph{startingTask} state which is in charge of initializing the additional data structures of the model, such as the list of available pods. As for the \emph{Queue} initial state, this state must be committed for the same reasons.
-				\item An \emph{idle} state which just sends tokens to the channel \emph{newTask} at random time intervals, according to the distribution specified. When the timer fires, during the transition a series of updating commands are run. It is undoubt that a more elegant choices would be to use a single function where all these upgrades are grouped, however, this would have led to drop in verification performances due to UPPAAL lack of optimization.
+				\item An \emph{idle} state which just sends tokens to the channel \emph{newTask} at random time intervals, according to the distribution specified. When the timer fires, during the transition a series of updating commands are run. It is undoubt that a more elegant choice would be to use a single function where all these upgrades are grouped, however, this would have led to drop in verification performances due to UPPAAL lack of optimization.
 			\end{itemize}
 			The Human template, instead, models the time elapsed between the robot arrival and departure from the delivery point. Its parameters set the values of mean and standard deviation of the normal distribution associated to the time needed to complete the job.\\
 			It is composed of a \emph{free} state and a \emph{busy} state to model the two possible conditions of the human operator. The transition from \emph{free} to \emph{busy} is fired when a bot reaches the delivery point and send a token on the channel \verb|podDelivered|. We decided to keep this particular channel as a single one because the human is not interested in knowing which bot delivered the pod. On the other hand, when the human completes his job, he sends a token on the channel \verb|pickUp|. Also this channel is a single one but the reason is slightly different: although it could seem useful to include the information of which bot must receive the pickUp token, it turns out this information is useless because only one bot at time may be able to receive it.\\
@@ -162,7 +162,7 @@
 			\begin{equation}
 				Z = \sqrt{-2\ln{U_1}}\,\cdot\,\cos{(2\pi U_2)}
 			\end{equation}
-			The choice of using the above equation has been made because of the simplicity of transorming two numbers generated using an UPPAAL built-in function into what we needed. In addition, the way to use the normal distribution probability would have been more complicated to implement and less efficient. The output of the function is a double number forced to be greater than zero. This is due to the fact that the number must be compared with a clock variable, hence it would be meaningless to use a negative value. For the comparison has been used a double number because it may be integrated in a more easy way inside the state, even if the solution is not the optimal one in terms of compatibility. Indeed, UPPAAL does not handle in a very smart way double values and raises an error when we try to use the simulator tab (no problem with the verifier instead).
+			The choice of using the above equation has been made because of the simplicity of transforming two numbers generated using an UPPAAL built-in function into what we needed. In addition, the way to use the normal distribution probability would have been more complicated to implement and less efficient. The output of the function is a double number forced to be greater than zero. This is due to the fact that the number must be compared with a clock variable, hence it would be meaningless to use a negative value. For the comparison has been used a double number because it may be integrated in a more easy way inside the state, even if the solution is not the optimal one in terms of compatibility. Indeed, UPPAAL does not handle in a very smart way double values and raises an error when we try to use the simulator tab (no problem with the verifier instead).
 			
 			\begin{figure}[H]
 				\centering
@@ -207,7 +207,8 @@
 		Further details in the statistical results are provided alongside the configurations.
 
 	\section{System Configurations}
-		We have prepared four configurations for the test: the first one actually fails in proving the desired property in the specified time interval, while the other ones try to fix the model changing every time a key parameter. In particular, we will try changing the human responsiveness, the number of bots and the time between two tasks.\\
+		We decided to show a schematic list of the configurations and the relative results and then put all the considerations and comments about the simulations outcome.\\
+		We have prepared four configurations for the test: the first one actually fails in proving the desired property in the specified time interval, while the other ones try to fix the model changing every time a key parameter. In particular, we will try changing the human responsiveness, the number of bots and the time between two tasks.
 		These parameters do not change among the various configurations:
 		\begin{center}
 			\begin{tabular}{ |c|c|}
@@ -359,7 +360,8 @@
 			As we can see from the various configurations, the possible simulation outcomes are only a probability which stays below a certain value [c.f. \ref{sub:sim2}] or a probability that keeps increasing until it reaches \emph{one} [c.f. \ref{sub:sim1} \& \ref{sub:sim3}]. A probability such as the one in \emph{simulation 4} is below the unity value only because the time limit used is not high enough.
 			
 	\section{Conclusion}
-		From the results showed, we were able to successfully find a configuration of the parameters where all the properties to check were satsified. Then, observing the outputs of the various configurations, we analyzed how the parameter variations affect the system itself.\\
+		From the results showed, we were able to successfully find a configuration of the parameters where all the properties to check were satsified. Moreover, the configuration that we were able to test successfully used 100000 seconds to carry out the run, and that represents a number of tasks carried out of  %AIUTOOOOO @Simone 
+		 Then, observing the outputs of the various configurations, we analyzed how the parameter variations affect the system itself.\\
 		One of the main characteristics that emerged is the need of having the interval between tasks longer than the human response time: the operator turned out to be the main bottleneck of the system.\\
 		On the other hand, we discovered that the bot number has a reduced impact on the model feasibility: having a high number of robots in the system does not modify \emph{directly} the probability of losing a packet, but extends the time needed to lose one [c.f. \ref{sub:sim1} \& \ref{sub:sim3}]. This is again due to the limits of the human operator: increasing the number of robots does not decrease the possibility of dropping a task because all of the bots will eventually have to interface with the human, and so the total service time will still heavily depend on the operator response time. A possible solution we envisioned is to add an additional operator at the same delivery point or in a different one, in order to increase system efficency. 
 	
