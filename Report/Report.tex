@@ -114,12 +114,20 @@
 						\caption{Example of bot movement between delivery and entry point}
 					\end{figure}
 				\end{itemize}
+				
 				\begin{figure}[H]
 					\centering
-					\includegraphics[scale = 0.55]{Images/BotMovement}
-					\caption{Example of bot movement with $K=1\,s$ during a time of $2200\,s$. The graph shows the movement of bot serving its tasks; the color gradient simply shows the time the bot traversed the cell.}
+					\begin{minipage}{0.45\textwidth}
+						\centering
+						\includegraphics[width=0.9\textwidth]{./Images/BotMovement}
+						\caption{Example of bot movement with $K=1\,s$ during a time of $2200\,s$.}
+					\end{minipage}\hfill
+					\begin{minipage}{0.45\textwidth}
+						\centering
+						\includegraphics[width=0.9\textwidth]{./Images/Grid.jpg}
+						\caption{The grid used for verification.}
+					\end{minipage}
 				\end{figure}
-
 
 		\subsection{Queue}
 			The Queue template models the mechanism to manage the arrival of new tasks in the system and their dispatching to the bots.\\
@@ -143,19 +151,25 @@
 				\item An initial committed \emph{startingTask} state which is in charge of initializing the additional data structures of the model, such as the list of available pods.
 				\item An \emph{idle} state which just sends tokens to the channel \emph{newTask} at random time intervals, according to the distribution specified.
 			\end{itemize}
-			\begin{figure}[H]
-				\centering
-				\includegraphics[scale = 0.65]{Images/taskDelay}
-				\caption{Example of task delay values, compared to the theoretical distribution chosen.}
-			\end{figure}
 			The Human template, instead, models the time elapsed between the robot arrival and departure from the delivery point. Its parameters set the values of mean and standard deviation of the normal distribution associated to the time needed to complete the job.\\
 			It is composed of a \emph{free} state and a \emph{busy} state to model the two possible conditions of the human operator. 
 			
 			\begin{figure}[H]
 				\centering
-				\includegraphics[scale = 0.65]{Images/humanDelay}
-				\caption{Example of human delay distribution of values from the simulation.}
+				\begin{minipage}{0.45\textwidth}
+					\centering
+					\includegraphics[width=0.9\textwidth]{./Images/taskDelay}
+					\caption{Example of task delay values, compared to the theoretical distribution chosen.}
+				\end{minipage}\hfill
+				\begin{minipage}{0.45\textwidth}
+					\centering
+					\includegraphics[width=0.9\textwidth]{./Images/humanDelay}
+					\caption{Example of human delay distribution of values from the simulation.}
+				\end{minipage}
 			\end{figure}
+			
+	\section{Desired Properties}
+				
 	\section{System Configurations}
 		We have prepared four configurations for the test: the first one actually fails in proving the desired property in the specified time interval, while the other ones try to fix the model changing every time a key parameter. In particular, we will try changing the human responsiveness, the number of bots and the time between two tasks.\\
 		These parameters do not change among the various configurations:
@@ -185,14 +199,7 @@
 					\hline
 				\end{tabular}
 			\end{center}
-			\begin{figure}[H]
-				\centering
-					\includegraphics[scale = 0.34]{Images/Grid.jpg}
-					\caption{Grid used for simulation}
-			\end{figure}
-
-		
-		
+			
 		\subsection{First Configuration - Failing}
 			\label{sub:sim1}
 			\begin{center}
