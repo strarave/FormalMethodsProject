@@ -160,9 +160,9 @@
 					\hline
 					Number of bots & 8\\
 					\hline
-					Task spawn rate - expected value $\mu_t$ & 70\\
+					Task spawn interval - expected value $\mu_t$ & 70\\
 					\hline					
-					Task spawn rate - standard deviation $\sigma_t$ & 15\\
+					Task spawn interval - standard deviation $\sigma_t$ & 15\\
 					\hline
 					Human response time - expected value $\mu_H$ & 100\\
 					\hline					
@@ -187,9 +187,9 @@
 					\hline
 					Number of bots & 8 \\
 					\hline
-					Task spawn rate - expected value $\mu_t$ & 70\\
+					Task spawn interval - expected value $\mu_t$ & 70\\
 					\hline					
-					Task spawn rate - standard deviation $\sigma_t$ & 15\\
+					Task spawn interval - standard deviation $\sigma_t$ & 15\\
 					\hline
 					Human response time - expected value $\mu_H$ & \textbf{60}\footnotemark\\
 					\hline					
@@ -197,9 +197,11 @@
 					\hline
 				\end{tabular}
 			\end{center}
+			This configuration has been verified with an upper time limit of $20000\,s$ and turned out to have a probability of losing a task lower than 5\%.
 			\footnotetext{Bold numbers represent parameter changed with respect to the first configuration}	
 			
 		\subsection{Third Configuration - Failing}
+			\label{sub:sim3}
 			\begin{center}
 				\begin{tabular}{ |c|c|}
 					\hline
@@ -208,9 +210,9 @@
 					\hline
 					Number of bots & \textbf{12}\\
 					\hline
-					Task spawn rate - expected value $\mu_t$ & 70\\
+					Task spawn interval - expected value $\mu_t$ & 70\\
 					\hline					
-					Task spawn rate - standard deviation $\sigma_t$ & 5\\
+					Task spawn interval - standard deviation $\sigma_t$ & 5\\
 					\hline
 					Human response time - expected value $\mu_H$ & 100\\
 					\hline					
@@ -235,9 +237,9 @@
 					\hline
 					Number of bots & 8\\
 					\hline
-					Task spawn rate - expected value $\mu_t$ & \textbf{85}\\
+					Task spawn interval - expected value $\mu_t$ & \textbf{85}\\
 					\hline					
-					Task spawn rate - standard deviation $\sigma_t$ & \textbf{10}\\
+					Task spawn interval - standard deviation $\sigma_t$ & \textbf{10}\\
 					\hline
 					Human response time - expected value $\mu_H$ & 100\\
 					\hline					
@@ -262,9 +264,9 @@
 			As we can see from the various configurations, the possible simulation outcomes are only a probability which stays below a certain value [c.f. \ref{sub:sim2}] or a probability that keeps increasing until it reaches $1$. A probability such as the one in \emph{simulation 4} is below $1$ only because the time limit used is not high enough.
 			
 	\section{Conclusion}
-		From the results showed, we were able to successfully find a configuration of the parameters where all the properties to check were satsified. We then proceeded to observing the output of other configurations in order to see how varying such parameters affect the system itself.\\
-		One of the main characteristics that emerged is the need of having the interval between tasks longer than the human response time: the operator turned out as the main bottleneck of the system.\\
-		What we also have been able to observe is the impact of the number of robots on the model: having an high number of robots in the system does not modify \emph{directly} the probability of losing a packet, but extends the time needed to lose one. This is again due to the limits of the human operator: increasing the number of robots does not change the possibility of dropping a task because all of them should interface with the human, and so the total service time will still heavily depend on the operator response time. A possible solution we envisioned was to add an additional operator (at the same delivery point or in an additional one). 
-	
+		From the results showed, we were able to successfully find a configuration of the parameters where all the properties to check were satsified. Then, observing the outputs of the various configurations, we analyzed how the parameter variations affect the system itself.\\
+		One of the main characteristics that emerged is the need of having the interval between tasks longer than the human response time: the operator turned out to be the main bottleneck of the system.\\
+		On the other hand, we discovered that the bot number has a reduced impact on the model feasibility: having a high number of robots in the system does not modify \emph{directly} the probability of losing a packet, but extends the time needed to lose one [c.f. \ref{sub:sim1} \& \ref{sub:sim3}]. This is again due to the limits of the human operator: increasing the number of robots does not decrease the possibility of dropping a task because all of bots will eventually have to interface with the human, and so the total service time will still heavily depend on the operator response time. A possible solution we envisioned is to add an additional operator at the same delivery point or in a different one in order to increase system efficency. 
+		
 		
 \end{document}
