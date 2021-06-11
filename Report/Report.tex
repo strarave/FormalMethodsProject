@@ -58,7 +58,7 @@
 	
 	\section{The Model}
 		\subsection{Grid}
-			The grid is implemented as a global bidimensional array of integers. This implementation allowed us to manage in a detailed way the single cells, and also helped us simplify the movement of the bots. We did not insert a template Grid because this would have required the introduction of many additional synchronization channels and would have been very difficult to integrate with other templates.
+			The grid is implemented as a global bidimensional array of integers. This implementation allowed us to manage in a detailed way the single cells and to simplify the movement of the bots. We did not insert a template Grid because this would have required the introduction of many additional synchronization channels and would have been very difficult to integrate with other templates.
 			The integers that model the grid cells are bounded: they can only assume 8 different values. These are
 			\begin{enumerate}[start=0, label={\arabic* :}]
 				\item the cell is free, so no bot or pods are in that cell
@@ -71,7 +71,7 @@
 				\item the cell is occupied by a bot and a claimed pod
 			\end{enumerate}
 			All these slight differences among cell states are needed to safely manage the movement of the bots and the assignement of a pod to a task. Moreover, adding the last two cell states allowed us to completely remove the "Pod" template, hence making the model slimmer.\\
-			The grid is highly configurable; the value of
+			The grid is highly configurable: indeed, the user is free to modify the following values:
 			\begin{itemize}
 				\item lenght of the grid
 				\item width of the grid
@@ -80,7 +80,7 @@
 				\item row lenght
 				\item space between rows
 			\end{itemize}
-			can be changed in the configuration file. Unfortunately, Uppaal requires these parameters to be constant at compile time, so they have to be manually changed in the template. We would have preferred to parametrize them, so to have to modify only the global definition. 
+			Unfortunately, Uppaal requires these parameters to be constant at compile time, so they have to be manually changed in the template. 
 			
 		
 		\subsection{Bot}
@@ -98,15 +98,15 @@
 			\subsubsection{Movement}
 				As we can see from the template, the movement of the robot is controlled by a function called \verb|chooseStrategy|. This function uses a parameter called \emph{strategy} to determine in which part of the path the robot is and to apply the corresponding movement function.\\
 				\begin{itemize}
-					\item \emph{From entry point to pod position} the bot goes to the lower left corner, reaches the row corresponding to bot one and, at the ene, goes left until it reaches the pod postion.\\This strategy features an \emph{anti-starvation} control to avoid unpredicted deadlocks. After reaching the pod position, the function increases by 1 the int \emph{strategy} and the boolean variable \emph{isLifting} becomes true;
+					\item \emph{From entry point to pod position} the bot goes to the lower left corner, reaches the row corresponding to pod one and, at the end, goes right until it reaches the pod postion.\\After reaching the pod position, the function increases by 1 the int \emph{strategy} and the boolean variable \emph{isLifting} becomes true;
 					\item \emph{From pod position to delivery point} the bot follows a different strategy: after checking if the near row is free, it goes up and then left until it reaches the penultima column. Here, the bot checks wheter the cell to its left is free. If so, it goes to the left and,then, it will go up until it reaches the delivery point; otherwise it goes down and repeats this procedure at the next move.\\This system has been implemented to create an ordered queue of bot to avoid deadlocks in case of many bots inside the grid. Once it reaches the delivery point, the bot send a \emph{podDelivered} message to the human;
 					\begin{figure}[ht]
 						\centering
-						\includegraphics[scale = 0.36]{Images/BotMovement1.JPG}
+						\includegraphics[scale = 0.38]{Images/BotMovement1.JPG}
 						\caption{Example of bot movement between entry and delivery point}
 					\end{figure}
 					\item \emph{From delivery point to pod position} the bot goes right until it reaches the ${(m-2)}^{th}$ column. Then it goes down until it reaches the line before the one it must get in. Here, the bot checks wheter the line is free. If so, it goes to the pod position following a straight path.
-					\item \emph{From pod position to the entry point} the bot moves horizontally until it reaches the column corresponding to the entry point. After that, it goes down until it reaches its destination.\footnote{To avoid possible soft locking situations, in case the entry point is on the first column, the bot stops its horizontal movement at the second column, then it goes down, and eventually it moves to the right to reach the entry point.}
+					\item \emph{From pod position to the entry point} the bot moves horizontally until it reaches the column corresponding to the entry point. After that, it goes down until it reaches its destination.\footnote{To avoid possible soft locking situations, in case the entry point is on the first column, the bot stops its horizontal movement at the second column, then it goes down, and eventually it moves to the right to reach the entry point.}\\This strategy features an \emph{anti-starvation} control to avoid unpredicted deadlocks.
 					\begin{figure}[ht]
 						\centering
 						\includegraphics[scale = 0.36]{Images/BotMovement2.JPG}
@@ -116,40 +116,39 @@
 				\begin{figure}[H]
 					\centering
 					\includegraphics[scale = 0.55]{Images/BotMovement}
-					\caption{Example of bot movement with $K=1s$ during a time of $2200s$. The graph shows the movement of bot serving its tasks; the color gradient simply shows the time the bot traversed the cell.}
+					\caption{Example of bot movement with $K=1\,s$ during a time of $2200\,s$. The graph shows the movement of bot serving its tasks; the color gradient simply shows the time the bot traversed the cell.}
 				\end{figure}
 
 
 		\subsection{Queue}
-			The Queue template models the mechanism to manage the arriving of new tasks in the system and their dispatching to the bots.\\
-			It also carries out the grid initialization.\\
-			It is composed of two states:
+			The Queue template models the mechanism to manage the arrival of new tasks in the system and their dispatching to the bots.\\
+			It also carries out the grid initialization. It is composed of two states:
 			\begin{itemize}
-				\item An initial \emph{start} state that we made also committed to carry out the queue and grid initializations; originally, the setting of the grid were carried out by a dedicated template, but since it was the only operation in that process we removed it and integrated in this one in order to simplify the model.
+				\item An initial committed \emph{start} state that carries out the queue and grid initializations; originally, the setting of the grid was carried out by a dedicated template, but, since it was the only operation in that process, we removed it and integrated in this one in order to simplify the model.
 				\item A \emph{working} state, that groups the functions of
 					\begin{enumerate}
 						\item Adding a task to the queue
-						\item Removing a task from the queue when it's been claimed by a bot
-						\item Keeping count of how many tasks have been issued, how many tasks are executed and how many tasks have been lost
+						\item Removing a task from the queue when it has been claimed by a bot
+						\item Keeping count of the number of tasks issued, executed and lost
 					\end{enumerate}
-					This last function is crucial, because the property that must hold in the system throughout the whole test run will directly address the number of tasks that have been lost managed by this process.
+					This last function is crucial because the property that must hold in the system throughout the whole test run will directly address the number of tasks that have been lost managed by this process.
 			\end{itemize}
-			We have initally modeled this template with a state dedicated to each one of the function listed above, then we progressively removed the states "embedding" their functionalities in the transitions and grouping them together. This was done in order to reduce the number of states to verify and improve the verification time. 
+			We have initally modelled this template with a state dedicated to each one of the function listed above, then we progressively removed the states "embedding" their functionalities in the transitions and grouping them together. This was done in order to reduce the number of states to verify and improve the verification time. 
 		
 		\subsection{Task and Human}
-			The Task template models the generation process of new tasks. Its parameters sets the values of mean and standard deviation of the normal distribution associated to the "spawn rate" of new tasks.\\
-			It's composed of two states:
+			The Task template models the generation process of new tasks. Its parameters set the values of mean and standard deviation of the normal distribution associated to the "spawn rate" of new tasks.\\
+			It is composed of two states:
 			\begin{itemize}
-				\item A \emph{startingTask} initial commit state that is in charge of initializing the additional data structures of the model, such as the list of available pods.
-				\item An \emph{idle} state that just sends tokens on the channel \emph{newTask} at random interval of time (according to the distribution specified).
+				\item An initial committed \emph{startingTask} state which is in charge of initializing the additional data structures of the model, such as the list of available pods.
+				\item An \emph{idle} state which just sends tokens to the channel \emph{newTask} at random time intervals, according to the distribution specified.
 			\end{itemize}
 			\begin{figure}[H]
 				\centering
 				\includegraphics[scale = 0.65]{Images/taskDelay}
 				\caption{Example of task delay values, compared to the theoretical distribution chosen.}
 			\end{figure}
-			The Human template, instead, models the time elapsed between the robot arrival and departure form the delivery point. Its parameters sets the values of mean and standard deviation of the normal distribution associated to the time needed to complete the job.\\
-			It is composed of a \emph{free} state and a \emph{busy} state to model the two possible condition of the human operator. 
+			The Human template, instead, models the time elapsed between the robot arrival and departure from the delivery point. Its parameters set the values of mean and standard deviation of the normal distribution associated to the time needed to complete the job.\\
+			It is composed of a \emph{free} state and a \emph{busy} state to model the two possible conditions of the human operator. 
 			
 			\begin{figure}[H]
 				\centering
