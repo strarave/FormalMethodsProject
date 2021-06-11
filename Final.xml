@@ -527,7 +527,7 @@ delayHuman = f()</label>
 	</template>
 	<system>queue = QUEUE();
 task = TASK(70.0, 15.0); // Model of the task generator. First value is muT, second value is sigmaT
-human  = HUMAN(100.0, 20.0); // // Model of the human. First value is muH, second value is sigmaH
+human  = HUMAN(60.0, 5.0); // // Model of the human. First value is muH, second value is sigmaH
 system queue, task, human, BOT;
 progress {prog;}</system>
 	<queries>
@@ -536,7 +536,7 @@ progress {prog;}</system>
 			<comment></comment>
 		</query>
 		<query>
-			<formula>Pr[&lt;=5000](&lt;&gt;(queue.discarded &gt; 0))</formula>
+			<formula>Pr[&lt;=5000]([](queue.discarded &gt; 0))</formula>
 			<comment></comment>
 		</query>
 	</queries>

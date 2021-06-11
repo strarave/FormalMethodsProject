@@ -178,6 +178,7 @@
 			\end{figure}
 		
 		\subsection{Second Configuration - Successful}
+			\label{sub:sim2}
 			\begin{center}
 				\begin{tabular}{ |c|c|}
 					\hline
@@ -256,7 +257,8 @@
 			\begin{itemize}
 				\item {\textbf{\underline{Human Responsiveness}}: The effect of changing the time the human needs to complete his task has a huge impact on the probability of success. Indeed, having a human even slightly slower than the task spawn rate leads eventually to a task lost. On the other hand, if the human is faster than the spawn rate, the success probability depends only on the time bots need to deliver a pod;}
 				\item {\textbf{\underline{Bot Parameters}}: Changing the number of bot inside the grid has the only effect of postponing the time of a task lost. To see this, it is sufficient to compare figure \ref{fig:sim1} and \ref{fig:sim3}. Indeed, they share a very similar probability just translated along the \emph{x axis};}
-				\item {\textbf{\underline{Task Spawn Rate}}:}
+				\item {\textbf{\underline{Task Spawn Rate}}:} As expected, decreasing the task spawn rate has the effect of reducing the probability of losing a task. Indeed, increasing this delay, the bots and the human have more time to complete a single task. Therefore, it is crucial not to have a spawn rate higher than the time time human needs to complete his job.
 			\end{itemize}
+			As we can see from the various configurations, the possible simulation outcomes are only a probability which stays below a certain value [c.f. \ref{sub:sim2}] or a probability that keeps increasing until it reaches $1$. A probability such as the one in \emph{simulation 4} is below $1$ only because the time limit used is not high enough.
 		
 \end{document}
