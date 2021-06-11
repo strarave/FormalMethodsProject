@@ -100,6 +100,7 @@
 			Notice that, inside the bot template declarations, most of the operation are carried considering booleans as integers with value of 0 or 1. This is allowed by UPPAAL and helps to reduce the effective number of states to be explored. The reason behind this is that UPPAAL \emph{if-else statements} optimization is not advanced to enough to effectively deal with all the different possible paths we needed. 
 			
 			\subsubsection{Movement}
+				In the following, it will be presented the robot movement strategy. The main idea behind this implementation was to achieve a function pretty simple (therefore not particularly optimized), but which ensures a starvation situation is never reached.\\
 				As we can see from the template, the movement of the robot is controlled by a function called \verb|chooseStrategy|. This function uses a parameter called \emph{strategy} to determine in which part of the path the robot is and to apply the corresponding movement function.
 				\begin{itemize}
 					\item \emph{From entry point to pod position} the bot goes to the lower left corner, reaches the row corresponding to pod one and, at the end, goes right until it reaches the pod postion.\\After reaching the pod position, the function increases by 1 the int \emph{strategy} and the boolean variable \emph{isLifting} becomes true;
@@ -107,6 +108,7 @@
 					\item \emph{From delivery point to pod position} the bot goes right until it reaches the ${(m-2)}^{th}$ column. Then it goes down until it reaches the line before the one it must get in. Here, the bot checks wheter the line is free. If so, it goes to the pod position following a straight path.
 					\item \emph{From pod position to the entry point} the bot moves horizontally until it reaches the column corresponding to the entry point. After that, it goes down until it reaches its destination.\footnote{To avoid possible soft locking situations, in case the entry point is on the first column, the bot stops its horizontal movement at the second column, then it goes down, and eventually it moves to the right to reach the entry point.}\\This strategy features an \emph{anti-starvation} control to avoid unpredicted deadlocks.
 				\end{itemize}
+				The main reason behind the choice of using a single function that groups all the others was made to reduce the number of state used in the template. Note that this is a different situation with respect to \ref{sub:TaskAndHuman}.
 				
 				\begin{figure}[H]
 					\centering
@@ -150,6 +152,7 @@
 			We have initally modelled this template with a state dedicated to each one of the function listed above, then we progressively removed the states "embedding" their functionalities in the transitions and grouping them together. 					The particular functions have been chosen because their use allowed us to reduce \emph{Queue} template to a single state, excluding the initial one. In other words, the modelled template has a very reduced number of state to be explored, increasing the overall verification performances.
 		
 		\subsection{Task and Human}
+			\label{sub:TaskAndHuman}
 			The Task template models the generation process of new tasks. Its parameters set the values of mean and standard deviation of the normal distribution associated to the "spawn rate" of new tasks.\\
 			It is composed of two states:
 			\begin{itemize}
@@ -360,10 +363,10 @@
 			As we can see from the various configurations, the possible simulation outcomes are only a probability which stays below a certain value [c.f. \ref{sub:sim2}] or a probability that keeps increasing until it reaches \emph{one} [c.f. \ref{sub:sim1} \& \ref{sub:sim3}]. A probability such as the one in \emph{simulation 4} is below the unity value only because the time limit used is not high enough.
 			
 	\section{Conclusion}
-		From the results showed, we were able to successfully find a configuration of the parameters where all the properties to check were satsified. Moreover, the configuration that we were able to test successfully used 100000 seconds to carry out the run, and that represents a number of tasks carried out of  %AIUTOOOOO @Simone 
+		From the results showed, we were able to successfully find a configuration of the parameters where all the properties to check were satsified. Moreover, the configuration that we were able to test successfully used 100000 seconds to carry out the run, and that represents more than 1400\footnote{Calculated considering that, on average, a task will be added every $\mu_t$ seconds} tasks carried out.%AIUTOOOOO @Simone %PREGOOOOO @Elia 
 		 Then, observing the outputs of the various configurations, we analyzed how the parameter variations affect the system itself.\\
 		One of the main characteristics that emerged is the need of having the interval between tasks longer than the human response time: the operator turned out to be the main bottleneck of the system.\\
-		On the other hand, we discovered that the bot number has a reduced impact on the model feasibility: having a high number of robots in the system does not modify \emph{directly} the probability of losing a packet, but extends the time needed to lose one [c.f. \ref{sub:sim1} \& \ref{sub:sim3}]. This is again due to the limits of the human operator: increasing the number of robots does not decrease the possibility of dropping a task because all of the bots will eventually have to interface with the human, and so the total service time will still heavily depend on the operator response time. A possible solution we envisioned is to add an additional operator at the same delivery point or in a different one, in order to increase system efficency. 
+		On the other hand, we discovered that the bot number has a reduced impact on the model feasibility: having a high number of robots in the system does not modify \emph{directly} the probability of losing a packet, but extends the time needed to lose one [c.f. \ref{sub:sim1} \& \ref{sub:sim3}]. This is again due to the limits of the human operator: increasing the number of robots does not decrease the possibility of dropping a task because all of the bots will eventually have to interface with the human, and so the total service time will still heavily depend on the operator response time. A possible solution we envisioned is to add an additional operator at the same delivery point or in a different one, in order to increase system efficency.
 	
 	\section{Bibliography}
 		\begin{itemize}
