@@ -198,6 +198,7 @@
 				\hline
 			\end{tabular}
 		\end{center}
+		Further details in the statistical results are provided alongside the configurations.
 
 	\section{System Configurations}
 		We have prepared four configurations for the test: the first one actually fails in proving the desired property in the specified time interval, while the other ones try to fix the model changing every time a key parameter. In particular, we will try changing the human responsiveness, the number of bots and the time between two tasks.\\
@@ -247,13 +248,15 @@
 					\hline					
 					Human response time - standard deviation $\sigma_H$ & 20\\
 					\hline
+					Total simulation time & $5000\, s$ \\
+					\hline
 				\end{tabular}
 			\end{center}
 			\begin{figure}[H]
 				\centering
-					\includegraphics[scale = 0.7]{Images/Simulation1}
-					\caption{Probability that a task is lost during simulation 1}
-					\label{fig:sim1}
+				\includegraphics[scale = 0.7]{Images/Simulation1}
+				\caption{Probability that a task is lost during simulation 1}
+				\label{fig:sim1}
 			\end{figure}
 		
 		\subsection{Second Configuration - Successful}
@@ -274,9 +277,11 @@
 					\hline					
 					Human response time - standard deviation $\sigma_H$ & \textbf{5}\\
 					\hline
+					Total simulation time & $100000\,s$ \\
+					\hline
 				\end{tabular}
 			\end{center}
-			This configuration has been verified with an upper time limit of $20000\,s$ and turned out to have a probability of losing a task lower than 5\%.
+			This configuration has been verified with an upper time limit of $100000\,s$ and turned out to have a probability of losing a task lower than 5\%.
 			\footnotetext{Bold numbers represent parameters changed with respect to the first configuration}	
 			
 		\subsection{Third Configuration - Failing}
@@ -296,6 +301,8 @@
 					Human response time - expected value $\mu_H$ & 100\\
 					\hline					
 					Human response time - standard deviation $\sigma_H$ & 20\\
+					\hline
+					Total simulation time & $5000\,s$\\
 					\hline
 				\end{tabular}
 			\end{center}
@@ -324,8 +331,11 @@
 					\hline					
 					Human response time - standard deviation $\sigma_H$ & 20\\
 					\hline
+					Total simulation time & $5000\,s$\\
+					\hline
 				\end{tabular}
 			\end{center}
+			What is interesting about this configuration is that probability of failure never reach a significative value, even if it is plausible that the system would not hold. This is due to the fact that the simulation interval given is not long enough to provide significative results.
 			\begin{figure}[H]
 				\centering
 					\includegraphics[scale = 0.6]{Images/Simulation4}
