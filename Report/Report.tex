@@ -5,7 +5,8 @@
 \usepackage{graphicx}
 \usepackage[bottom]{footmisc}
 \usepackage{float}
-
+\usepackage{MnSymbol}
+\usepackage{amsmath}
 
 \title{Stochastic Model Checking of Warehouse Robotics}
 \author{Corti Simone, Ravella Elia, Sarneri Enrico}
@@ -101,19 +102,23 @@
 				\begin{itemize}
 					\item \emph{From entry point to pod position} the bot goes to the lower left corner, reaches the row corresponding to pod one and, at the end, goes right until it reaches the pod postion.\\After reaching the pod position, the function increases by 1 the int \emph{strategy} and the boolean variable \emph{isLifting} becomes true;
 					\item \emph{From pod position to delivery point} the bot follows a different strategy: after checking if the near row is free, it goes up and then left until it reaches the penultima column. Here, the bot checks wheter the cell to its left is free. If so, it goes to the left and,then, it will go up until it reaches the delivery point; otherwise it goes down and repeats this procedure at the next move.\\This system has been implemented to create an ordered queue of bot to avoid deadlocks in case of many bots inside the grid. Once it reaches the delivery point, the bot send a \emph{podDelivered} message to the human;
-					\begin{figure}[ht]
-						\centering
-						\includegraphics[scale = 0.38]{Images/BotMovement1.JPG}
-						\caption{Example of bot movement between entry and delivery point}
-					\end{figure}
 					\item \emph{From delivery point to pod position} the bot goes right until it reaches the ${(m-2)}^{th}$ column. Then it goes down until it reaches the line before the one it must get in. Here, the bot checks wheter the line is free. If so, it goes to the pod position following a straight path.
 					\item \emph{From pod position to the entry point} the bot moves horizontally until it reaches the column corresponding to the entry point. After that, it goes down until it reaches its destination.\footnote{To avoid possible soft locking situations, in case the entry point is on the first column, the bot stops its horizontal movement at the second column, then it goes down, and eventually it moves to the right to reach the entry point.}\\This strategy features an \emph{anti-starvation} control to avoid unpredicted deadlocks.
-					\begin{figure}[ht]
-						\centering
-						\includegraphics[scale = 0.36]{Images/BotMovement2.JPG}
-						\caption{Example of bot movement between delivery and entry point}
-					\end{figure}
 				\end{itemize}
+				
+				\begin{figure}[H]
+					\centering
+					\begin{minipage}{0.45\textwidth}
+						\centering
+						\includegraphics[width=0.9\textwidth]{./Images/BotMovement1.JPG}
+						\caption{Example of bot movement between entry and delivery point.}
+					\end{minipage}\hfill
+					\begin{minipage}{0.45\textwidth}
+						\centering
+						\includegraphics[width=0.9\textwidth]{./Images/BotMovement2.JPG}
+						\caption{Example of bot movement between delivery and entry point.}
+					\end{minipage}
+				\end{figure}
 				
 				\begin{figure}[H]
 					\centering
@@ -169,36 +174,61 @@
 			\end{figure}
 			
 	\section{Desired Properties}
-				
+		The crucial property the system should satisfy is that a task never get lost; this can happen only if a new task arrives and the queue is full. More formally:
+		\begin{equation}
+			\forall\, (\square \text{ $\neg$ (queue.discarded) } > 0)
+		\end{equation}
+		Since we used SMC we do not aim to get a binary "the property holds / the property does not hold" but instead a probability range that provides information about the \emph{possibility} of such condition to not hold. The parameters we have used for the statistical part of the model checking are presented in the table:
+		\begin{center}
+			\begin{tabular}{ | c | c |}
+				\hline
+				Parameter & Value \\
+				\hline
+				\hline
+				Probabilistic deviation ($\delta$) & $\pm$ 0.01 \\
+				\hline
+				Probability of false negatives ($\alpha$) & 0.05 \\
+				\hline
+				Probability of false positives ($\beta$) & 0.05 \\
+				\hline
+				Uncertainty ($\epsilon$) & 0.0025 \\
+				\hline
+				Ratio bounds & [0.9, 1.1]\\
+				\hline
+				Trace resolution & 4096 \\
+				\hline
+			\end{tabular}
+		\end{center}
+
 	\section{System Configurations}
 		We have prepared four configurations for the test: the first one actually fails in proving the desired property in the specified time interval, while the other ones try to fix the model changing every time a key parameter. In particular, we will try changing the human responsiveness, the number of bots and the time between two tasks.\\
 		These parameters do not change among the various configurations:
 		\begin{center}
-				\begin{tabular}{ |c|c|}
-					\hline
-					Parameter & Value \\
-					\hline
-					\hline
-					Grid width & 15\\
-					\hline
-					Grid height & 20\\
-					\hline
-					Number of pods per row & 11\\
-					\hline
-					Space between rows & 1 \\
-					\hline
-					Entry point position & (19, 3) \\
-					\hline
-					Delivery point position & (0, 14) \\
-					\hline
-					Maximumm queue length & 3 \\
-					\hline
-					Robot movement speed & 2 \\
-					\hline
-					Robot exponential parameter $\lambda_{bot}$ & 10 \\
-					\hline
-				\end{tabular}
-			\end{center}
+			\begin{tabular}{ |c|c|}
+				\hline
+				Parameter & Value \\
+				\hline
+				\hline
+				Grid width & 15\\
+				\hline
+				Grid height & 20\\
+				\hline
+				Number of pods per row & 11\\
+				\hline
+				Space between rows & 1 \\
+				\hline
+				Entry point position & (19, 3) \\
+				\hline
+				Delivery point position & (0, 14) \\
+				\hline
+				Maximumm queue length & 3 \\
+				\hline
+				Robot movement speed & 2 \\
+				\hline
+				Robot exponential parameter $\lambda_{bot}$ & 10 \\
+				\hline
+			\end{tabular}
+		\end{center}
 			
 		\subsection{First Configuration - Failing}
 			\label{sub:sim1}
