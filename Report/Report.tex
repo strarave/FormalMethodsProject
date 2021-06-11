@@ -258,5 +258,11 @@
 				\item {\textbf{\underline{Bot Parameters}}: Changing the number of bot inside the grid has the only effect of postponing the time of a task lost. To see this, it is sufficient to compare figure \ref{fig:sim1} and \ref{fig:sim3}. Indeed, they share a very similar probability just translated along the \emph{x axis};}
 				\item {\textbf{\underline{Task Spawn Rate}}:}
 			\end{itemize}
+			
+	\section{Conclusion}
+		From the results showed, we were able to successfully find a configuration of the parameters where all the properties to check were satsified. We then proceeded to observing the output of other configurations in order to see how varying such parameters affect the system itself.\\
+		One of the main characteristics that emerged is the need of having the interval between tasks longer than the human response time: the operator turned out as the main bottleneck of the system.\\
+		What we also have been able to observe is the impact of the number of robots on the model: having an high number of robots in the system does not modify \emph{directly} the probability of losing a packet, but extends the time needed to lose one. This is again due to the limits of the human operator: increasing the number of robots does not change the possibility of dropping a task because all of them should interface with the human, and so the total service time will still heavily depend on the operator response time. A possible solution we envisioned was to add an additional operator (at the same delivery point or in an additional one). 
+	
 		
 \end{document}
