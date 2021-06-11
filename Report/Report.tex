@@ -11,79 +11,47 @@
 \begin{document}
 	\begin{titlepage}
 
-
-
-
-
 		\thispagestyle{empty}
-%\begin{titlepage}
-\vspace*{-1.5cm} \bfseries{
-\begin{center}
-  \large
-  POLITECNICO DI MILANO\\
-  \normalsize
-  Formal Methods for Concurrent and Real-Time Systems\\
-  Department of Electronic, Information and Bioengineering\\
-  \vspace*{.75truecm}
-  \begin{figure}[htbp]
-    \begin{center}
-      \includegraphics[width=6cm]{./Images/logo_poli.png}
-%	\psfig{file=./pictures/logopm.jpg,width=3.5cm}
-    \end{center}
-  \end{figure}
-  \vspace*{0.3cm} \LARGE
+		\vspace*{-1.5cm} \bfseries{
+			\begin{center}
+				\LARGE
+				POLITECNICO DI MILANO\\
+				\vspace*{.3truecm}
+				
+				\large				
+				Department of Electronic, Information and Bioengineering\\
+				\vspace*{.1truecm}
+				Formal Methods for Concurrent and Real-Time Systems\\
+				\vspace*{.75truecm}
+				
+				\begin{figure}[htbp]
+					\begin{center}
+						\includegraphics[width=6cm]{./Images/logo_poli.png}
+					\end{center}
+				\end{figure}
+				
+				\vspace*{0.8cm} 
+				\LARGE
+				\textbf{Stochastic Model Checking of Warehouse Robotic System}\\
+				\vspace*{4.5truecm}
+			\end{center}
+		}
+		
+		\mdseries
+		
+		\begin{center}
+			\large
+			Authors:\\ Corti Simone, matriculation n. 968788 \\ 
+			Ravella Elia, matriculation n. 967243 \\
+			Sarneri Enrico, matriculation n. \\
 
+			\vspace*{1cm}
 
+			Academic Year 2020-2021
+		\end{center} 
 
-  \textbf{Stochastic Model Checking of Warehouse Robotic System}\\
-
-
-
-  \vspace*{.75truecm}
-  
-\end{center}
-\vspace*{4.5cm}
-}
-\mdseries
-\begin{center}
-
-
-  Authors:\\ Corti Simone, matriculation n. 968788 \\ 
-		       Ravella Elia, matriculation n. 967243 \\
-			   Sarneri Enrico, matriculation n. 641067 \\
-
-
-
-\vspace*{0.5cm}
-
-  Academic Year 2020-2021
-\end{center} \clearpage
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        % \begin{figure}[htp]
-        %     \begin{center}
-        %         \includegraphics[width = \textwidth]{./Images/logo_poli.png}
-        %     \end{center}
-        % \end{figure}
-        % \vspace{1cm}
-        % {\centering \large {\huge \bf Stochastic Model Checking of Warehouse Robotic System\\}}
-        % \vspace*{1cm}
-        % {\centering {Authors: Corti Simone, Ravella Elia, Sarneri Enrico\\Academic Year: 2020/2021\\}}
     \end{titlepage}
+	\clearpage
 	
 	\tableofcontents
 	\clearpage
@@ -340,6 +308,14 @@
 		From the results showed, we were able to successfully find a configuration of the parameters where all the properties to check were satsified. Then, observing the outputs of the various configurations, we analyzed how the parameter variations affect the system itself.\\
 		One of the main characteristics that emerged is the need of having the interval between tasks longer than the human response time: the operator turned out to be the main bottleneck of the system.\\
 		On the other hand, we discovered that the bot number has a reduced impact on the model feasibility: having a high number of robots in the system does not modify \emph{directly} the probability of losing a packet, but extends the time needed to lose one [c.f. \ref{sub:sim1} \& \ref{sub:sim3}]. This is again due to the limits of the human operator: increasing the number of robots does not decrease the possibility of dropping a task because all of bots will eventually have to interface with the human, and so the total service time will still heavily depend on the operator response time. A possible solution we envisioned is to add an additional operator at the same delivery point or in a different one in order to increase system efficency. 
-		
+	
+	\section{Bibliography}
+		\begin{itemize}
+			\item \emph{A Tutorial on Uppaal 4.0} by Gerd Behrmann, Alexandre David, and Kim G. Larsen \\
+				Consulted for the modeling suggestions and the design patterns
+			\item \emph{Uppaal SMC Tutorial} by Alexandre David, Kim G. Larsen, Axel Legay, Marius Mikučionis, and Danny Bøgsted Poulsen \\
+				Helped us with the stochastic features of Uppaal
+			\item \verb|https://docs.uppaal.org/| \\ the official software documentation for the modeling tool
+		\end{itemize}
 		
 \end{document}
