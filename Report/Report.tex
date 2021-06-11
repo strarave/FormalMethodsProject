@@ -155,7 +155,7 @@
 				\caption{Example of human delay distribution}
 			\end{figure}
 	\section{System Configurations}
-		We have prepared 4 configurations for the test, the first one that actually fails in proving the searched property in the confidence interval we defined, and the other ones that try to fix the model changing every time a key parameter. In particular, we will try changing the human responsiveness, the number of bots and the time between two tasks.\\
+		We have prepared four configurations for the test: the first one actually fails in proving the desired property in the specified time interval, while the other ones try to fix the model changing every time a key parameter. In particular, we will try changing the human responsiveness, the number of bots and the time between two tasks.\\
 		These parameters do not change among the various configurations:
 		\begin{center}
 				\begin{tabular}{ |c|c|}
@@ -239,7 +239,7 @@
 				\end{tabular}
 			\end{center}
 			This configuration has been verified with an upper time limit of $20000\,s$ and turned out to have a probability of losing a task lower than 5\%.
-			\footnotetext{Bold numbers represent parameter changed with respect to the first configuration}	
+			\footnotetext{Bold numbers represent parameters changed with respect to the first configuration}	
 			
 		\subsection{Third Configuration - Failing}
 			\label{sub:sim3}
@@ -296,18 +296,18 @@
 			\end{figure}
 	
 	\section{Result Discussion}
-			As we can see from the previous section, starting from an initial configuration gieven by parameters such as at point \ref{sub:sim1} leads to a failure, or, in other words, in a high probability of loosing a task.\\In order to avoid this, few parameter changes are made:
+			As we can see from the previous section, starting from an initial configuration given by parameters such as at point \ref{sub:sim1} leads to a failure, or, in other words, to a high probability of loosing a task.\\In order to avoid this, few parameter changes are made:
 			\begin{itemize}
 				\item {\textbf{\underline{Human Responsiveness}}: The effect of changing the time the human needs to complete his task has a huge impact on the probability of success. Indeed, having a human even slightly slower than the task spawn rate leads eventually to a task lost. On the other hand, if the human is faster than the spawn rate, the success probability depends only on the time bots need to deliver a pod;}
-				\item {\textbf{\underline{Bot Parameters}}: Changing the number of bot inside the grid has the only effect of postponing the time of a task lost. To see this, it is sufficient to compare figure \ref{fig:sim1} and \ref{fig:sim3}. Indeed, they share a very similar probability just translated along the \emph{x axis};}
-				\item {\textbf{\underline{Task Spawn Rate}}:} As expected, decreasing the task spawn rate has the effect of reducing the probability of losing a task. Indeed, increasing this delay, the bots and the human have more time to complete a single task. Therefore, it is crucial not to have a spawn rate higher than the time time human needs to complete his job.
+				\item {\textbf{\underline{Bot Parameters}}: Changing the number of bot inside the grid has the only effect of postponing the time of a task lost. To see this, it is sufficient to compare figure \ref{fig:sim1} and \ref{fig:sim3}. Indeed, they share a very similar probability curve, just translated along the \emph{x axis};}
+				\item {\textbf{\underline{Task Spawn Rate}}:} As expected, decreasing the task spawn rate has the effect of reducing the probability of losing a task. Indeed, increasing this delay, the bots and the human have more time to complete a single task. Therefore, it is crucial not to have a spawn rate higher than the time the operator needs to complete his job.
 			\end{itemize}
-			As we can see from the various configurations, the possible simulation outcomes are only a probability which stays below a certain value [c.f. \ref{sub:sim2}] or a probability that keeps increasing until it reaches $1$. A probability such as the one in \emph{simulation 4} is below $1$ only because the time limit used is not high enough.
+			As we can see from the various configurations, the possible simulation outcomes are only a probability which stays below a certain value [c.f. \ref{sub:sim2}] or a probability that keeps increasing until it reaches \emph{one} [c.f. \ref{sub:sim1} \& \ref{sub:sim3}]. A probability such as the one in \emph{simulation 4} is below the unity value only because the time limit used is not high enough.
 			
 	\section{Conclusion}
 		From the results showed, we were able to successfully find a configuration of the parameters where all the properties to check were satsified. Then, observing the outputs of the various configurations, we analyzed how the parameter variations affect the system itself.\\
 		One of the main characteristics that emerged is the need of having the interval between tasks longer than the human response time: the operator turned out to be the main bottleneck of the system.\\
-		On the other hand, we discovered that the bot number has a reduced impact on the model feasibility: having a high number of robots in the system does not modify \emph{directly} the probability of losing a packet, but extends the time needed to lose one [c.f. \ref{sub:sim1} \& \ref{sub:sim3}]. This is again due to the limits of the human operator: increasing the number of robots does not decrease the possibility of dropping a task because all of bots will eventually have to interface with the human, and so the total service time will still heavily depend on the operator response time. A possible solution we envisioned is to add an additional operator at the same delivery point or in a different one in order to increase system efficency. 
+		On the other hand, we discovered that the bot number has a reduced impact on the model feasibility: having a high number of robots in the system does not modify \emph{directly} the probability of losing a packet, but extends the time needed to lose one [c.f. \ref{sub:sim1} \& \ref{sub:sim3}]. This is again due to the limits of the human operator: increasing the number of robots does not decrease the possibility of dropping a task because all of the bots will eventually have to interface with the human, and so the total service time will still heavily depend on the operator response time. A possible solution we envisioned is to add an additional operator at the same delivery point or in a different one in order to increase system efficency. 
 	
 	\section{Bibliography}
 		\begin{itemize}
