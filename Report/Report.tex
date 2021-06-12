@@ -61,7 +61,7 @@
 	\section{The Model}
 		The final model we develepoed includes \emph{four} templates which are presented in the following section. Our design philosophy has been to make choices that are questionable from a stylistic point of view, but are ideal to overcome UPPAAL limitations and lack of optimization.
 		\subsection{Grid}
-			The grid is implemented as a global bidimensional array of integers. This implementation allowed us to manage in a detailed way the single cells and to simplify the movement of the bots. We did not insert a template Grid because this would have required the introduction of many additional synchronization channels and would have been very difficult to integrate with other templates.
+			The grid is implemented as a global bidimensional array of integers. This implementation allowed us to manage in a detailed way the single cells and to simplify the movement of the bots. We did not insert a template Grid because this would have required the introduction of many additional synchronization channels, that would have rendered the model much more difficult to verify.
 			The integers that model the grid cells are bounded: they can only assume 8 different values. These are
 			\begin{enumerate}[start=0, label={\arabic* :}]
 				\item the cell is free, so no bot or pods are in that cell
@@ -87,13 +87,13 @@
 			
 		
 		\subsection{Bot}
-			The Bot template has the task to model the behaviour of the various robots in the system. \\
+			The Bot template has the task of modeling the behaviour of the various robots in the system. \\
 			It accepts as input parameter the custom-type variable $bot_t$, which represents the ID assigned to the bot.\\
 			The template is composed of the following states:
 			\begin{itemize}
 				\item \textbf{\underline{Idle}}: this is the initial state of the template and it models the bot when it has no claimed task.\\The bot may leave this state when the number of available tasks is greater than zero. Furthermore, the probability that the bot is leaving this location is modeled as an exponential distribution with $\chi\;\sim\;(\lambda_{bot})$;
 				\item \textbf{\underline{Claimed}}: this state represents the bot after it claimed a task from the queue until it reaches the delivery point. The bot is forced to leave this state after \emph{K} seconds;
-				\item \textbf{\underline{Delivered}}: the bot reaches this state when its position coincides with the delivery point. The bot stays in the state until it recevies a \emph{PickUp} message from the \emph{Human};
+				\item \textbf{\underline{Delivered}}: the bot reaches this state when its position coincides with the delivery point. The bot stays in the state until it receivies a \emph{PickUp} message from the \emph{Human};
 				\item \textbf{\underline{Returning}}: after leaving the delivery point, the bot returns back to the \emph{pod position} and, after this, it goes back to the \emph{entry point}. As in claimed, the bot must leave the state after \emph{K} seconds.
 			\end{itemize}
 			When the pod is moving to reach its destination, it follows a predetermined path which will be explained in the following section.
@@ -102,7 +102,7 @@
 				As we can see from the template, the movement of the robot is controlled by a function called \verb|chooseStrategy|. This function uses a parameter called \emph{strategy} to determine in which part of the path the robot is and to apply the corresponding movement function.\\
 				\begin{itemize}
 					\item \emph{From entry point to pod position} the bot goes to the lower left corner, reaches the row corresponding to pod one and, at the end, goes right until it reaches the pod postion.\\After reaching the pod position, the function increases by 1 the int \emph{strategy} and the boolean variable \emph{isLifting} becomes true;
-					\item \emph{From pod position to delivery point} the bot follows a different strategy: after checking if the near row is free, it goes up and then left until it reaches the penultima column. Here, the bot checks wheter the cell to its left is free. If so, it goes to the left and,then, it will go up until it reaches the delivery point; otherwise it goes down and repeats this procedure at the next move.\\This system has been implemented to create an ordered queue of bot to avoid deadlocks in case of many bots inside the grid. Once it reaches the delivery point, the bot send a \emph{podDelivered} message to the human;
+					\item \emph{From pod position to delivery point} the bot follows a different strategy: after checking if the near row is free, it goes up and then left until it reaches the penultimate column. Here, the bot checks wheter the cell to its left is free. If so, it goes to the left and,then, it will go up until it reaches the delivery point; otherwise it goes down and repeats this procedure at the next move.\\This system has been implemented to create an ordered queue of bot to avoid deadlocks in case of many bots inside the grid. Once it reaches the delivery point, the bot send a \emph{podDelivered} message to the human;
 					\item \emph{From delivery point to pod position} the bot goes right until it reaches the ${(m-2)}^{th}$ column. Then it goes down until it reaches the line before the one it must get in. Here, the bot checks wheter the line is free. If so, it goes to the pod position following a straight path.
 					\item \emph{From pod position to the entry point} the bot moves horizontally until it reaches the column corresponding to the entry point. After that, it goes down until it reaches its destination.\footnote{To avoid possible soft locking situations, in case the entry point is on the first column, the bot stops its horizontal movement at the second column, then it goes down, and eventually it moves to the right to reach the entry point.}\\This strategy features an \emph{anti-starvation} control to avoid unpredicted deadlocks.
 				\end{itemize}
@@ -142,11 +142,11 @@
 				\item An initial committed \emph{start} state that carries out the queue and grid initializations; originally, the setting of the grid was carried out by a dedicated template, but, since it was the only operation in that process, we removed it and integrated in this one in order to simplify the model. In addition, this state must be committed because no time has to pass between simulation start and various variable initialization.
 				\item A \emph{working} state, whose possible transitions are used to model the following features:
 					\begin{enumerate}
-						\item \textbf{\underline{Adding a task to the queue}}: when the template \emph{Task} sends a token on the channel \verb|newTask|, \emph{Queue} receives it and, if the queue is not full, update the queue list; otherwise, the new task is dropped and the variable \verb|queue.discared| is increased by 1.
+						\item \textbf{\underline{Adding a task to the queue}}: when the template \emph{Task} sends a token on the channel \verb|newTask|, \emph{Queue} receives it and, if the queue is not full, update the queue list; otherwise, the new task is dropped and the variable \verb|queue.discarded| is increased by 1.
 						\item \textbf{\underline{Communicate with BOT template}}: when a bot is sending a token on the channel \verb|claim|, \emph{Queue} receives it and communicates to the bot the task to claim, including the information about its location. In order to do so, this template updates a global variable which is accessible by the bot. In addition, when a task is claimed, \emph{Queue} updates the queue list removing the claimed task.
 					\end{enumerate}
 			\end{itemize}
-			We have initally modelled this template with a state dedicated to each one of the function listed above, then we progressively removed the states "embedding" their functionalities in the transitions and grouping them together. 					The particular functions have been chosen because their use allowed us to reduce \emph{Queue} template to a single state, excluding the initial one. In other words, the modelled template has a very reduced number of state to be explored, increasing the overall verification performances.
+			We have initally modelled this template with a state dedicated to each one of the functions listed above, then we progressively removed the states "embedding" their functionalities in the transitions and grouping them together. The particular functions have been chosen because their use allowed us to reduce \emph{Queue} template to a single state, excluding the initial one. In other words, the modelled template has a very reduced number of state to be explored, increasing the overall verification performances.
 		
 		\subsection{Task and Human}
 			The Task template models the generation process of new tasks. Its parameters set the values of mean and standard deviation of the normal distribution associated to the "spawn rate" of new tasks.\\
@@ -207,7 +207,7 @@
 
 	\section{System Configurations}
 		We decided to show a schematic list of the configurations and the relative results and then put all the considerations and comments about the simulations outcome.\\
-		We have prepared four configurations for the test: the first one actually fails in proving the desired property in the specified time interval, while the other ones try to fix the model changing every time a key parameter. In particular, we will try changing the human responsiveness, the number of bots and the time between two tasks.
+		We have prepared four configurations for the test: the first one actually fails in proving the desired property in the specified time interval, while the other ones try to fix the model changing a key parameter every time. In particular, we will try changing the human responsiveness, the number of bots and the time between two tasks.
 		These parameters do not change among the various configurations:
 		\begin{center}
 			\begin{tabular}{ |c|c|}
@@ -350,19 +350,19 @@
 			\end{figure}
 	
 	\section{Result Discussion}
-			As we can see from the previous section, starting from an initial configuration given by parameters such as at point \ref{sub:sim1} leads to a failure, or, in other words, to a high probability of losing a task.\\In order to avoid this, few parameter changes are made:
+			As we can see from the previous section, starting from an initial configuration given by parameters such as at point \ref{sub:sim1} leads to a failure, or, in other words, to a high probability of losing a task.\\In order to avoid this, a few parameter changes are made:
 			\begin{itemize}
-				\item {\textbf{\underline{Human Responsiveness}}: The effect of changing the time the human needs to dismiss the bot has a huge impact on the probability of success. Indeed, having a human even slightly slower than the task spawn rate leads eventually to a task lost. On the other hand, if the human is faster than the spawn rate, the success probability depends only on the time bots need to deliver a pod}
-				\item {\textbf{\underline{Bot Parameters}}: Changing the number of bot inside the grid has the only effect of postponing the time of a lost task. To see this, it is sufficient to compare figure \ref{fig:sim1} and \ref{fig:sim3}. Indeed, they share a very similar probability curve, just translated along the \emph{x axis}}
+				\item {\textbf{\underline{Human Responsiveness}}: The effect of changing the time the human needs to dismiss the bot has a huge impact on the probability of success. Indeed, having a human even slightly slower than the task spawn rate leads eventually to a task lost. On the other hand, if the human is faster than the spawn rate, the success probability depends only on the time the bots need to deliver a pod}
+				\item {\textbf{\underline{Bot Parameters}}: Changing the number of bots inside the grid has the only effect of postponing the time of a lost task. To see this, it is sufficient to compare figure \ref{fig:sim1} and \ref{fig:sim3}. Indeed, they share a very similar probability curve, just translated along the \emph{x axis}}
 				\item {\textbf{\underline{Task Spawn Rate}}:} As expected, decreasing the task spawn rate has the effect of reducing the probability of losing a task. Indeed, increasing this delay, the bots and the human have more time to complete a single task. Therefore, it is crucial not to have a spawn rate higher than the time the operator needs to complete his job
 			\end{itemize}
 			As we can see from the various configurations, the possible simulation outcomes are only a probability which stays below a certain value [c.f. \ref{sub:sim2}] or a probability that keeps increasing until it reaches \emph{one} [c.f. \ref{sub:sim1} \& \ref{sub:sim3}]. A probability such as the one in \emph{simulation 4} is below the unity value only because the time limit used is not high enough.
 			
 	\section{Conclusion}
-		From the results showed, we were able to successfully find a configuration of the parameters where all the properties to check were satsified. Moreover, the configuration that we were able to test successfully used 100000 seconds to carry out the run, and that represents a number of tasks carried out of  %AIUTOOOOO @Simone 
-		 Then, observing the outputs of the various configurations, we analyzed how the parameter variations affect the system itself.\\
+		From the results showed, we were able to successfully find a configuration of the parameters where all the properties to be checked were satisfied. Moreover, the configuration that we were able to test successfully used 100000 seconds to carry out the run, and that represents a number of tasks carried out of  %AIUTOOOOO @Simone 
+		Then, observing the outputs of the various configurations, we analyzed how the parameter variations affect the system itself.\\
 		One of the main characteristics that emerged is the need of having the interval between tasks longer than the human response time: the operator turned out to be the main bottleneck of the system.\\
-		On the other hand, we discovered that the bot number has a reduced impact on the model feasibility: having a high number of robots in the system does not modify \emph{directly} the probability of losing a packet, but extends the time needed to lose one [c.f. \ref{sub:sim1} \& \ref{sub:sim3}]. This is again due to the limits of the human operator: increasing the number of robots does not decrease the possibility of dropping a task because all of the bots will eventually have to interface with the human, and so the total service time will still heavily depend on the operator response time. A possible solution we envisioned is to add an additional operator at the same delivery point or in a different one, in order to increase system efficency. 
+		On the other hand, we discovered that the bot number has a reduced impact on the model feasibility: having a high number of robots in the system does not modify \emph{directly} the probability of losing a packet, but only extends the time that eventually lead to a loss [c.f. \ref{sub:sim1} \& \ref{sub:sim3}]. This is again due to the limits of the human operator: increasing the number of robots does not decrease the possibility of dropping a task because all of the bots will eventually have to interface with the human, and so the total service time will still heavily depend on the operator response time. A possible solution we envisioned is to add an additional operator at the same delivery point or in a different one, in order to increase system efficency. 
 	
 	\section{Bibliography}
 		\begin{itemize}
