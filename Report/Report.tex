@@ -190,6 +190,7 @@
 		\begin{equation}
 			\exists\, (\Diamond \text{ queue.discarded } > 0)
 		\end{equation}
+		where a high probability means the system loses some tasks, while a low probability means the system is able to successfully run.\\
 		The parameters we have used for the statistical part of the model checking are presented in the table:
 		\begin{center}
 			\begin{tabular}{ | c | c |}
@@ -367,7 +368,7 @@
 			As we can see from the various configurations, the possible simulation outcomes are only a probability which stays below a certain value [c.f. \ref{sub:sim2}] or a probability that keeps increasing until it reaches \emph{one} [c.f. \ref{sub:sim1} \& \ref{sub:sim3}]. A probability such as the one in \emph{simulation 4} is below the unity value only because the time limit used is not high enough.
 			
 	\section{Conclusion}
-		From the results showed, we were able to successfully find a configuration of the parameters where all the properties to be checked were satisfied. Moreover, the configuration that we were able to test successfully used 100000 seconds to carry out the run, and that represents a number of tasks carried out of  %AIUTOOOOO @Simone 
+		From the results showed, we were able to successfully find a configuration of the parameters where all the properties to be checked were satisfied. Moreover, the configuration that we were able to test successfully used 100000 seconds to carry out the run, and that represents more than 1400\footnote{Calculated considering that, on average, a task will be added every $\mu_t$ seconds} tasks carried out. %AIUTOOOOO @Simone %PREGOOOOO @Elia
 		Then, observing the outputs of the various configurations, we analyzed how the parameter variations affect the system itself.\\
 		One of the main characteristics that emerged is the need of having the interval between tasks longer than the human response time: the operator turned out to be the main bottleneck of the system.\\
 		On the other hand, we discovered that the bot number has a reduced impact on the model feasibility: having a high number of robots in the system does not modify \emph{directly} the probability of losing a packet, but only extends the time that eventually lead to a loss [c.f. \ref{sub:sim1} \& \ref{sub:sim3}]. This is again due to the limits of the human operator: increasing the number of robots does not decrease the possibility of dropping a task because all of the bots will eventually have to interface with the human, and so the total service time will still heavily depend on the operator response time. A possible solution we envisioned is to add an additional operator at the same delivery point or in a different one, in order to increase system efficency. 
