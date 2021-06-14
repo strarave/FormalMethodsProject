@@ -59,7 +59,8 @@
 	\clearpage
 	
 	\section{The Model}
-		The final model we develepoed includes \emph{four} templates which are presented in the following section. Our design philosophy has been to make choices that are questionable from a stylistic point of view, but are ideal to overcome UPPAAL limitations and lack of optimization.
+		The final model we develepoed includes \emph{four} templates which are presented in the following section. Our design philosophy has been to make choices that are questionable from a stylistic point of view, but are ideal to overcome UPPAAL limitations and lack of optimization.\\
+		At high level, the model is structured wiht a main template named \emph{Queue}. It receives tasks from the template \emph{Task} whenever a new one is ready and gives information about pod to claim to bots asking for a task.
 		\subsection{Grid}
 			The grid is implemented as a global bidimensional array of integers. This implementation allowed us to manage in a detailed way the single cells and to simplify the movement of the bots. We did not insert a template Grid because this would have required the introduction of many additional synchronization channels, that would have rendered the model much more difficult to verify.
 			The integers that model the grid cells are bounded: they can only assume 8 different values. These are
@@ -83,13 +84,12 @@
 				\item row lenght
 				\item space between rows
 			\end{itemize}
-			Unfortunately, Uppaal requires these parameters to be constant at compile time, so they have to be manually changed in \emph{"System declarations"}. 
+			Unfortunately, Uppaal requires these parameters to be constant at compile time, so they have to be manually changed in \emph{"System declarations"} or in \emph{Global declarations}.\\
+			The constraints in some variables are introduced in order to keep bot movement strategy simple enough to be handled without too much computational complexity.
 			
 		
 		\subsection{Bot}
-			The Bot template has the task of modeling the behaviour of the various robots in the system. \\
-			It accepts as input parameter the custom-type variable $bot_t$, which represents the ID assigned to the bot.\\
-			The template is composed of the following states:
+			The Bot template has the task of modeling the behaviour of the various robots in the system. It accepts as input parameter the custom-type variable $bot_t$, which represents the ID assigned to the bot. The template is composed of the following states:
 			\begin{itemize}
 				\item \textbf{\underline{Idle}}: this is the initial state of the template and it models the bot when it has no claimed task.\\The bot may leave this state when the number of available tasks is greater than zero. Furthermore, the probability that the bot is leaving this location is modeled as an exponential distribution with $\chi\;\sim\;(\lambda_{bot})$;
 				\item \textbf{\underline{Claimed}}: this state represents the bot after it claimed a task from the queue until it reaches the delivery point. The bot is forced to leave this state after \emph{K} seconds;
@@ -186,7 +186,11 @@
 		\begin{equation}
 			\forall\, (\square \text{ $\neg$ (queue.discarded) } > 0)
 		\end{equation}
-		Since we used SMC we do not aim to get a binary "the property holds / the property does not hold" but instead a probability range that provides information about the \emph{possibility} of such condition to not hold. The parameters we have used for the statistical part of the model checking are presented in the table:
+		Since we used SMC we do not aim to get a binary "the property holds / the property does not hold" but instead a probability range that provides information about the \emph{possibility} of such condition to not hold. Indeed, what we verified is the probability of the following formula:
+		\begin{equation}
+			\exists\, (\Diamond \text{ queue.discarded } > 0)
+		\end{equation}
+		The parameters we have used for the statistical part of the model checking are presented in the table:
 		\begin{center}
 			\begin{tabular}{ | c | c |}
 				\hline
@@ -269,7 +273,7 @@
 				\label{fig:sim1}
 			\end{figure}
 		
-		\subsection{Second Configuration - Successful}
+		\subsection{Second Configuration - Successful} %Verificato in 70 minuti
 			\label{sub:sim2}
 			\begin{center}
 				\begin{tabular}{ |c|c|}
