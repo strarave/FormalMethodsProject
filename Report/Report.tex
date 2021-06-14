@@ -60,7 +60,7 @@
 	
 	\section{The Model}
 		The final model we develepoed includes \emph{four} templates which are presented in the following section. Our design philosophy has been to make choices that are questionable from a stylistic point of view, but are ideal to overcome UPPAAL limitations and lack of optimization.\\
-		At high level, the model is structured wiht a main template named \emph{Queue}. It receives tasks from the template \emph{Task} whenever a new one is ready and gives information about pod to claim to bots asking for a task.
+		At high level, the model is structured with a main template named \emph{Queue}. It receives tasks from the template \emph{Task} whenever a new one is ready and gives information about pod to claim to bots asking for a task. The bots then move autonomously on the grid, lift the required pod and deliver it at the chosen delivery point. The bot is then freed by the human, that communicates directly with the robot to signal when it can return the pod. 
 		\subsection{Grid}
 			The grid is implemented as a global bidimensional array of integers. This implementation allowed us to manage in a detailed way the single cells and to simplify the movement of the bots. We did not insert a template Grid because this would have required the introduction of many additional synchronization channels, that would have rendered the model much more difficult to verify.
 			The integers that model the grid cells are bounded: they can only assume 8 different values. These are
