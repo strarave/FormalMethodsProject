@@ -190,7 +190,10 @@
 		\begin{equation}
 			\exists\, (\Diamond \text{ queue.discarded } > 0)
 		\end{equation}
-		where a high probability means the system loses some tasks, while a low probability means the system is able to successfully run.\\
+		where a high probability means the system loses some tasks, while a low probability means the system is able to successfully run. Ultimately, expressed in PCTL, this becomes
+		\begin{equation}
+			\mathbb{P}(\Diamond_{\tau} \text{ queue.discarded } > 0)
+		\end{equation}
 		The parameters we have used for the statistical part of the model checking are presented in the table:
 		\begin{center}
 			\begin{tabular}{ | c | c |}
