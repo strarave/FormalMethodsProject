@@ -85,19 +85,19 @@
 				\item row lenght
 				\item space between rows
 			\end{itemize}
-			Unfortunately, Uppaal requires these parameters to be constant at compile time, so they have to be manually changed in \emph{"System declarations"} or in \emph{Global declarations}.\\
+			Unfortunately, Uppaal requires these parameters to be constant at compile time, so they have to be manually changed in \emph{"System declarations"} or in \emph{"Global declarations"}.\\
 			The constraints in some variables are introduced in order to keep bot movement strategy simple enough to be handled without too much computational complexity.
 			
 		
 		\subsection{Bot}
 			The Bot template has the task of modeling the behaviour of the various robots in the system. It accepts as input parameter the custom-type variable $bot_t$, which represents the ID assigned to the bot. The template is composed of the following states:
 			\begin{itemize}
-				\item \textbf{\underline{Idle}}: this is the initial state of the template and it models the bot when it has no claimed task.\\The bot may leave this state when the number of available tasks is greater than zero. Furthermore, the probability that the bot is leaving this location is modeled as an exponential distribution with $\chi\;\sim\;(\lambda_{bot})$;
-				\item \textbf{\underline{Claimed}}: this state represents the bot after it claimed a task from the queue until it reaches the delivery point. The bot is forced to leave this state after \emph{K} seconds;
+				\item \textbf{\underline{Idle}}: this is the initial state of the template and it models the bot when it has no claimed task. The bot may leave this state when the number of available tasks is greater than zero. Furthermore, the probability that the bot is leaving this location is modeled as an exponential distribution with $\chi\;\sim\;(\lambda_{bot})$;
+				\item \textbf{\underline{Claimed}}: this state represents the bot after it claimed a task from the queue until it reaches the delivery point. The bot is forced to leave this state after \emph{K} seconds. The transition between \emph{Claimed} and \emph{Delivered} is regualated by the urgent channel \emph{podDelivered}. The channel is been set urgent because when the bot reaches the delivery point, no time should pass between bot arrival and message sending;
 				\item \textbf{\underline{Delivered}}: the bot reaches this state when its position coincides with the delivery point. The bot stays in the state until it receivies a \emph{PickUp} message from the \emph{Human};
-				\item \textbf{\underline{Returning}}: after leaving the delivery point, the bot returns back to the \emph{pod position} and, after this, it goes back to the \emph{entry point}. As in claimed, the bot must leave the state after \emph{K} seconds.
+				\item \textbf{\underline{Returning}}: after leaving the delivery point, the bot returns back to the \emph{pod position} and, after this, it goes back to the \emph{entry point}. As in claimed, the bot must leave the state after \emph{K} seconds and the transition between \emph{Returning} and \emph{Idle} is regulated by the urgent channel \emph{backToIdle}. This channel is used for the only purpose of letting the robot enter in the idle state as soon as it reaches the entry point. Indeed there are no receivers for this message.
 			\end{itemize}
-			When the pod is moving to reach its destination, it follows a predetermined path which will be explained in the following section.\\
+			When the bot is moving to reach its destination, it follows a predetermined path which will be explained in the following section.\\
 			Notice that, inside the bot template declarations, most of the operation are carried considering booleans as integers with value of 0 or 1. This is allowed by UPPAAL and helps to reduce the effective number of states to be explored. The reason behind this is that UPPAAL \emph{if-else statements} optimization is not advanced enough to effectively deal with all the different possible paths we needed. 
 			
 			\subsubsection{Movement}
@@ -105,8 +105,8 @@
 				As we can see from the template, the movement of the robot is controlled by a function called \verb|chooseStrategy|. This function uses a parameter called \emph{strategy} to determine in which part of the path the robot is and to apply the corresponding movement function.
 				\begin{itemize}
 					\item \emph{From entry point to pod position} the bot goes to the lower left corner, reaches the row corresponding to pod one and, at the end, goes right until it reaches the pod postion.\\After reaching the pod position, the function increases by 1 the int \emph{strategy} and the boolean variable \emph{isLifting} becomes true;
-					\item \emph{From pod position to delivery point} the bot follows a different strategy: after checking if the near row is free, it goes up and then left until it reaches the penultimate column. Here, the bot checks wheter the cell to its left is free. If so, it goes to the left and,then, it will go up until it reaches the delivery point; otherwise it goes down and repeats this procedure at the next move.\\This system has been implemented to create an ordered queue of bot to avoid deadlocks in case of many bots inside the grid. Once it reaches the delivery point, the bot send a \emph{podDelivered} message to the human;
-					\item \emph{From delivery point to pod position} the bot goes right until it reaches the ${(m-2)}^{th}$ column. Then it goes down until it reaches the line before the one it must get in. Here, the bot checks wheter the line is free. If so, it goes to the pod position following a straight path.
+					\item \emph{From pod position to delivery point} the bot follows a different strategy: after checking if the near row is free, it goes up and then left until it reaches the penultimate column. Here, the bot checks wheter the cell to its left is free. If so, it goes to the left and,then, it will go up until it reaches the delivery point; otherwise it goes down and repeats this procedure at the next move. This system has been implemented to create an ordered queue of bot to avoid deadlocks in case of many bots inside the grid. Once it reaches the delivery point, the bot send a \emph{podDelivered} message to the human;
+					\item \emph{From delivery point to pod position} the bot goes right until it reaches the ${(m-2)}^{th}$ column. Then it goes down until it reaches the line before the one it must get in. Here, the bot checks wheter the line is free. If so, it goes to the pod position following a straight path. Then the variable \emph{isLifting} becomes false and \emph{strategy} is increased by 1.
 					\item \emph{From pod position to the entry point} the bot moves horizontally until it reaches the column corresponding to the entry point. After that, it goes down until it reaches its destination.\footnote{To avoid possible soft locking situations, in case the entry point is on the first column, the bot stops its horizontal movement at the second column, then it goes down, and eventually it moves to the right to reach the entry point.}\\This strategy features an \emph{anti-starvation} control to avoid unpredicted deadlocks.
 				\end{itemize}
 				The main reason behind the choice of using a single function that groups all the others was made to reduce the number of state used in the template. Note that this is a different situation with respect to \ref{sub:TaskAndHuman}.
@@ -147,9 +147,10 @@
 				\item A \emph{working} state, whose possible transitions are used to model the following features:
 					\begin{enumerate}
 						\item \textbf{\underline{Adding a task to the queue}}: when the template \emph{Task} sends a token on the channel \verb|newTask|, \emph{Queue} receives it and, if the queue is not full, update the queue list; otherwise, the new task is dropped and the variable \verb|queue.discarded| is increased by 1.
-						\item \textbf{\underline{Communicate with BOT template}}: when a bot is sending a token on the channel \verb|claim|, \emph{Queue} receives it and communicates to the bot the task to claim, including the information about its location. In order to do so, this template updates a global variable which is accessible by the bot. In addition, when a task is claimed, \emph{Queue} updates the queue list removing the claimed task.
+						\item \textbf{\underline{Communicate with BOT template}}: when a bot is sending a token on the channel \verb|claim|, \emph{Queue} receives it and communicates to the bot the task to claim, including the information about its location. In order to do so, this template updates a global variable\footnotemark\ which is accessible by the bot. In addition, when a task is claimed, \emph{Queue} updates the queue list removing the claimed task.
 					\end{enumerate}
 			\end{itemize}
+			\footnotetext{The choice of using a global variable instead of a meta one has been done because, in UPPAAL, it is not possible to include in an single transition the token exchanges on a channel and the information sent from the receiver to the sender. This is our particular case, so the alternative would have been to use an additional state just to exchange the meta variable. In order to keep the model as small as possible, we opted for the solution of the global variable. A third solution, namely switching sender/receiver role inside the two involved templates, is also possible, but its implementation would require the addition of few variables and a complication of the model.}
 			We have initally modelled this template with a state dedicated to each one of the functions listed above, then we progressively removed the states "embedding" their functionalities in the transitions and grouping them together. The particular functions have been chosen because their use allowed us to reduce \emph{Queue} template to a single state, excluding the initial one. In other words, the modelled template has a very reduced number of state to be explored, increasing the overall verification performances.
 		
 		\subsection{Task and Human}
@@ -166,7 +167,7 @@
 			\begin{equation}
 				Z = \sqrt{-2\ln{U_1}}\,\cdot\,\cos{(2\pi U_2)}
 			\end{equation}
-			The choice of using the above equation has been made because of the simplicity of transforming two numbers generated using an UPPAAL built-in function into what we needed. In addition, the way to use the normal distribution probability would have been more complicated to implement and less efficient. The output of the function is a double number forced to be greater than zero. This is due to the fact that the number must be compared with a clock variable, hence it would be meaningless to use a negative value. For the comparison has been used a double number because it may be integrated in a more easy way inside the state, even if the solution is not the optimal one in terms of compatibility. Indeed, UPPAAL does not handle in a very smart way double values and raises an error when we try to use the simulator tab (no problem with the verifier instead).
+			The choice of using the above equation has been made because of the simplicity of transforming two numbers generated using an UPPAAL built-in function into what we needed. In addition, the way to use the normal distribution probability would have been more complicated to implement and less efficient. The output of the function is a double number forced to be greater than zero. This is due to the fact that the number must be compared with a clock variable, hence it would be meaningless to use a negative value. For the comparison, a double number has been used because it may be integrated in a more easy way inside the state, even if the solution is not the optimal one in terms of compatibility. Indeed, UPPAAL does not handle in a very smart way double values and raises an error when we try to use the simulator tab (no problem with the verifier instead).
 			
 			\begin{figure}[H]
 				\centering
@@ -185,9 +186,9 @@
 	\section{Desired Properties}
 		The crucial property the system should satisfy is that a task never get lost; this can happen only if a new task arrives and the queue is full. More formally:
 		\begin{equation}
-			\forall\, (\square \text{ $\neg$ (queue.discarded) } > 0)
+			\forall\, (\square \text{ $\neg$ (queue.discarded } > 0))
 		\end{equation}
-		Since we used SMC we do not aim to get a binary "the property holds / the property does not hold" but instead a probability range that provides information about the \emph{possibility} of such condition to not hold. Indeed, what we verified is the probability of the following formula:
+		Since we used SMC we do not aim to get a binary "the property holds / the property does not hold" but instead a probability range that provides information about the \emph{possibility} of such condition not to hold. Indeed, what we verified is the probability of the following formula being verified:
 		\begin{equation}
 			\exists\, (\Diamond \text{ queue.discarded } > 0)
 		\end{equation}
@@ -204,11 +205,11 @@
 				\hline
 				Probabilistic deviation ($\delta$) & $\pm$ 0.01 \\
 				\hline
-				Probability of false negatives ($\alpha$) & 0.05 \\
+				Probability of false negatives ($\alpha$) & 0.01 \\
 				\hline
-				Probability of false positives ($\beta$) & 0.05 \\
+				Probability of false positives ($\beta$) & 0.01 \\
 				\hline
-				Uncertainty ($\epsilon$) & 0.0025 \\
+				Uncertainty ($\epsilon$) & 0.025 \\
 				\hline
 				Ratio bounds & [0.9, 1.1]\\
 				\hline
@@ -219,7 +220,7 @@
 		Further details in the statistical results are provided alongside the configurations.
 
 	\section{System Configurations}
-		We decided to show a schematic list of the configurations and the relative results and then put all the considerations and comments about the simulations outcome.\\
+		We decided to show a schematic list of the configurations and the relative results and then discuss about the simulation outcomes in the next session.\\
 		We have prepared four configurations for the test: the first one actually fails in proving the desired property in the specified time interval, while the other ones try to fix the model changing a key parameter every time. In particular, we will try changing the human responsiveness, the number of bots and the time between two tasks.
 		These parameters do not change among the various configurations:
 		\begin{center}
@@ -267,7 +268,7 @@
 					\hline					
 					Human response time - standard deviation $\sigma_H$ & 20\\
 					\hline
-					Total simulation time & $5000\, s$ \\
+					Total simulation time & $6000\, s$ \\
 					\hline
 				\end{tabular}
 			\end{center}
@@ -300,8 +301,10 @@
 					\hline
 				\end{tabular}
 			\end{center}
-			This configuration has been verified with an upper time limit of $100000\,s$ and turned out to have a probability of losing a task lower than 5\%.
-			\footnotetext{Bold numbers represent parameters changed with respect to the first configuration}	
+			\footnotetext{Bold numbers represent parameters changed with respect to the first configuration}
+			This configuration has been verified with an upper time limit of $100000\,s$\footnote{The time needed for the verification is approximately 2 hours (using an Intel Core I7 - 7700 HQ). Because of this we suggest to use a smaller simulation time (between 5000 and 10000$\,s$, for example)}	 and turned out to have a probability of losing a task lower than 5\%.
+			
+			
 			
 		\subsection{Third Configuration - Failing}
 			\label{sub:sim3}
@@ -315,13 +318,13 @@
 					\hline
 					Task spawn interval - expected value $\mu_t$ & 70\\
 					\hline					
-					Task spawn interval - standard deviation $\sigma_t$ & 5\\
+					Task spawn interval - standard deviation $\sigma_t$ & 15\\
 					\hline
 					Human response time - expected value $\mu_H$ & 100\\
 					\hline					
 					Human response time - standard deviation $\sigma_H$ & 20\\
 					\hline
-					Total simulation time & $5000\,s$\\
+					Total simulation time & $6000\,s$\\
 					\hline
 				\end{tabular}
 			\end{center}
@@ -342,19 +345,19 @@
 					\hline
 					Number of bots & 8\\
 					\hline
-					Task spawn interval - expected value $\mu_t$ & \textbf{85}\\
+					Task spawn interval - expected value $\mu_t$ & \textbf{90}\\
 					\hline					
-					Task spawn interval - standard deviation $\sigma_t$ & \textbf{10}\\
+					Task spawn interval - standard deviation $\sigma_t$ & \textbf{20}\\
 					\hline
 					Human response time - expected value $\mu_H$ & 100\\
 					\hline					
 					Human response time - standard deviation $\sigma_H$ & 20\\
 					\hline
-					Total simulation time & $5000\,s$\\
+					Total simulation time & $6000\,s$\\
 					\hline
 				\end{tabular}
 			\end{center}
-			What is interesting about this configuration is that probability of failure never reach a significative value, even if it is plausible that the system would not hold. This is due to the fact that the simulation interval given is not long enough to provide significative results.
+			What is interesting about this configuration is that probability of failure never reaches a significative value, even if it is plausible that the system would not hold. This is due to the fact that the simulation interval given is not long enough to provide significative results.
 			\begin{figure}[H]
 				\centering
 					\includegraphics[scale = 0.6]{Images/Simulation4}
@@ -363,19 +366,20 @@
 			\end{figure}
 	
 	\section{Result Discussion}
-			As we can see from the previous section, starting from an initial configuration given by parameters such as at point \ref{sub:sim1} leads to a failure, or, in other words, to a high probability of losing a task.\\In order to avoid this, a few parameter changes are made:
+			As we can see from the previous section, starting from an initial configuration given by parameters such as at point \ref{sub:sim1} leads to a failure, or, in other words, to a high probability of losing a task. In order to avoid this, a few parameter changes are made:
 			\begin{itemize}
-				\item {\textbf{\underline{Human Responsiveness}}: The effect of changing the time the human needs to dismiss the bot has a huge impact on the probability of success. Indeed, having a human even slightly slower than the task spawn rate leads eventually to a task lost. On the other hand, if the human is faster than the spawn rate, the success probability depends only on the time the bots need to deliver a pod}
-				\item {\textbf{\underline{Bot Parameters}}: Changing the number of bots inside the grid has the only effect of postponing the time of a lost task. To see this, it is sufficient to compare figure \ref{fig:sim1} and \ref{fig:sim3}. Indeed, they share a very similar probability curve, just translated along the \emph{x axis}}
-				\item {\textbf{\underline{Task Spawn Rate}}:} As expected, decreasing the task spawn rate has the effect of reducing the probability of losing a task. Indeed, increasing this delay, the bots and the human have more time to complete a single task. Therefore, it is crucial not to have a spawn rate higher than the time the operator needs to complete his job
+				\item {\textbf{\underline{Human Responsiveness}}: The effect of changing the time the human needs to dismiss the bot has a huge impact on the probability of success. Indeed, having a human even slightly slower than the task spawn rate leads eventually to a task lost. On the other hand, if the human is faster than the spawn rate, the success probability depends only on the time the bots need to deliver a pod};
+				\item {\textbf{\underline{Bot Parameters}}: Changing the number of bots inside the grid has the only effect of postponing the time of a lost task. To see this, it is sufficient to compare figure \ref{fig:sim1} and \ref{fig:sim3}. Indeed, they share a very similar probability curve, just translated along the \emph{x axis}};
+				\item {\textbf{\underline{Task Spawn Rate}}:} As expected, decreasing the task spawn rate has the effect of reducing the probability of losing a task. Indeed, increasing this delay, the bots and the human have more time to complete a single task. Therefore, it is crucial not to have a spawn rate higher than the time the operator needs to complete his job.
 			\end{itemize}
-			As we can see from the various configurations, the possible simulation outcomes are only a probability which stays below a certain value [c.f. \ref{sub:sim2}] or a probability that keeps increasing until it reaches \emph{one} [c.f. \ref{sub:sim1} \& \ref{sub:sim3}]. A probability such as the one in \emph{simulation 4} is below the unity value only because the time limit used is not high enough.
+			As we can see from the various configurations, the possible simulation outcomes are only a probability which stays below a certain value [c.f. \ref{sub:sim2}] or a probability that keeps increasing until it reaches \emph{one} [c.f. \ref{sub:sim1} \& \ref{sub:sim3}]. A probability such as the one in \emph{simulation 4} is below the unity value only because the time limit used is not high enough\footnote{Although it would be easy to increase the time limit and show a simulation with a certain result, we believe it is interesting to see what is the possible outcome when the user sets a time limit not high enough.}.
+			Indeed, if the time limit is not high enough, the simulation loses much of its value. However, it is possible to note that, in general, the time limit needed to verify a failure is much less than the one to give a satisfying confindence to a successful configuration. This is due to the fact that the time to reach a probability of losing a task near 1 in a failure verification is bounded in consideration of the specific configuration used. On the other hand, the successful configuration cannot be completely verified because it is intrinsically unbounded (although the SMC is bounded by the specified time limit). However, the time limit used for the \ref{sub:sim2}, as already said, gives a reasonably good idea of the future behaviour of the system.
 			
 	\section{Conclusion}
-		From the results showed, we were able to successfully find a configuration of the parameters where all the properties to be checked were satisfied. Moreover, the configuration that we were able to test successfully used 100000 seconds to carry out the run, and that represents more than 1400\footnote{Calculated considering that, on average, a task will be added every $\mu_t$ seconds} tasks carried out. %AIUTOOOOO @Simone %PREGOOOOO @Elia
+		From the results showed, we were able to successfully find a configuration of the parameters where all the properties to be checked were satisfied. Moreover, the configuration that we were able to test successfully used 100000 seconds to carry out the run, and that represents more than 1400\footnote{Calculated considering that, on average, a task will be added every $\mu_t$ seconds} tasks completed. %AIUTOOOOO @Simone %PREGOOOOO @Elia
 		Then, observing the outputs of the various configurations, we analyzed how the parameter variations affect the system itself.\\
-		One of the main characteristics that emerged is the need of having the interval between tasks longer than the human response time: the operator turned out to be the main bottleneck of the system.\\
-		On the other hand, we discovered that the bot number has a reduced impact on the model feasibility: having a high number of robots in the system does not modify \emph{directly} the probability of losing a packet, but only extends the time that eventually lead to a loss [c.f. \ref{sub:sim1} \& \ref{sub:sim3}]. This is again due to the limits of the human operator: increasing the number of robots does not decrease the possibility of dropping a task because all of the bots will eventually have to interface with the human, and so the total service time will still heavily depend on the operator response time. A possible solution we envisioned is to add an additional operator at the same delivery point or in a different one, in order to increase system efficency. 
+		One of the main characteristics that emerged is the need of having the interval between tasks longer than the human response time: the operator turned out to be the main bottleneck of the system.
+		On the other hand, we discovered that the bot number has a reduced impact on the model feasibility: having a high number of robots in the system does not modify \emph{directly} the probability of losing a packet, but only extends the time that eventually lead to a loss\footnote{Of course this statement holds only if the number of bot is high enough, although the "high enough" means only few robot units, depending on the grid configuration.} [c.f. \ref{sub:sim1} \& \ref{sub:sim3}]. This is again due to the limits of the human operator: increasing the number of robots does not decrease the possibility of dropping a task because all of the bots will eventually have to interface with the human, and so the total service time will still heavily depend on the operator response time. A possible solution we envisioned is to add an additional operator at the same delivery point or in a different one, in order to increase system efficency. 
 
 	\section{Bibliography}
 		\begin{itemize}
