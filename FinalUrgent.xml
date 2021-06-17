@@ -388,6 +388,9 @@ void pop() {
 }</declaration>
 		<location id="id4" x="-425" y="8">
 			<name x="-435" y="-26">start</name>
+			<label kind="comments" x="-748" y="34">The start location has the only purpose of initializing
+the various variables of the QUEUE template.
+Because of this it has been modelled as a committed state</label>
 			<committed/>
 		</location>
 		<location id="id5" x="-161" y="8">
@@ -412,6 +415,12 @@ discarded ++</label>
 			<label kind="synchronisation" x="-153" y="-153">claim[i]?</label>
 			<label kind="assignment" x="-153" y="-136">pop() ,nTask--,
 tmpCommunicatePodToBot = queueList[0]</label>
+			<label kind="comments" x="-34" y="-255">When a bot asks for a task to
+claim the queue template updates
+queueList removing the claimed
+task and setting the next task to
+be claimed equal to the first
+element of queueList.</label>
 			<nail x="-161" y="-94"/>
 			<nail x="42" y="-94"/>
 		</transition>
@@ -422,6 +431,13 @@ tmpCommunicatePodToBot = queueList[0]</label>
 			<label kind="synchronisation" x="-153" y="110">newTask?</label>
 			<label kind="assignment" x="-153" y="127">append(tmpPodChosenByTask), 
 nTask++, tmpCommunicatePodToBot = queueList[0]</label>
+			<label kind="comments" x="204" y="51">When a new task is ready, QUEUE
+receives it and updates all the
+corresponding variables (list of
+available task and current number
+of tasks).
+If the number of tasks is equal
+to maxT, the new task is droppped</label>
 			<nail x="-161" y="110"/>
 			<nail x="42" y="110"/>
 		</transition>
@@ -561,7 +577,7 @@ delayHuman = f()</label>
 		</transition>
 	</template>
 	<system>queue = QUEUE();
-task = TASK(90.0, 15.0); // Model of the task generator. First value is muT, second value is sigmaT
+task = TASK(70.0, 15.0); // Model of the task generator. First value is muT, second value is sigmaT
 human  = HUMAN(100.0, 20.0); // // Model of the human. First value is muH, second value is sigmaH
 system queue, task, human, BOT;
 progress {prog;}</system>

@@ -92,11 +92,12 @@
 		\subsection{Bot}
 			The Bot template has the task of modeling the behaviour of the various robots in the system. It accepts as input parameter the custom-type variable $bot_t$, which represents the ID assigned to the bot. The template is composed of the following states:
 			\begin{itemize}
-				\item \textbf{\underline{Idle}}: this is the initial state of the template and it models the bot when it has no claimed task. The bot may leave this state when the number of available tasks is greater than zero. Furthermore, the probability that the bot is leaving this location is modeled as an exponential distribution with $\chi\;\sim\;(\lambda_{bot})$;
+				\item \textbf{\underline{Idle}}: this is the initial state of the template and it models the bot when it has no claimed task. The bot may leave this state when the number of available tasks\footnotemark\ is greater than zero. Furthermore, the probability that the bot is leaving this location is modeled as an exponential distribution with $\chi\;\sim\;(\lambda_{bot})$;
 				\item \textbf{\underline{Claimed}}: this state represents the bot after it claimed a task from the queue until it reaches the delivery point. The bot is forced to leave this state after \emph{K} seconds. The transition between \emph{Claimed} and \emph{Delivered} is regualated by the urgent channel \emph{podDelivered}. The channel is been set urgent because when the bot reaches the delivery point, no time should pass between bot arrival and message sending;
 				\item \textbf{\underline{Delivered}}: the bot reaches this state when its position coincides with the delivery point. The bot stays in the state until it receivies a \emph{PickUp} message from the \emph{Human};
 				\item \textbf{\underline{Returning}}: after leaving the delivery point, the bot returns back to the \emph{pod position} and, after this, it goes back to the \emph{entry point}. As in claimed, the bot must leave the state after \emph{K} seconds and the transition between \emph{Returning} and \emph{Idle} is regulated by the urgent channel \emph{backToIdle}. This channel is used for the only purpose of letting the robot enter in the idle state as soon as it reaches the entry point. Indeed there are no receivers for this message.
 			\end{itemize}
+			\footnotetext{Although the number of task should be known only by the \emph{Queue} template, it has been set as a global variable since the use of SMC obliges to convert all channels into \emph{broadcast} channels. Because of this, it is not possible to avoid a transition to fire only setting the guard on the receiver, but the guard has to be implemented on the sender transition too.}
 			When the bot is moving to reach its destination, it follows a predetermined path which will be explained in the following section.\\
 			Notice that, inside the bot template declarations, most of the operation are carried considering booleans as integers with value of 0 or 1. This is allowed by UPPAAL and helps to reduce the effective number of states to be explored. The reason behind this is that UPPAAL \emph{if-else statements} optimization is not advanced enough to effectively deal with all the different possible paths we needed. 
 			
@@ -155,7 +156,7 @@
 		
 		\subsection{Task and Human}
 			\label{sub:TaskAndHuman}
-			The Task template models the generation process of new tasks. Its parameters set the values of mean and standard deviation of the normal distribution associated to the "spawn rate" of new tasks.\\
+			The Task template models the generation process of new tasks. Its parameters set the values of mean and standard deviation of the normal distribution associated to the "spawn rate" of new tasks.
 			It is composed of two states:
 			\begin{itemize}
 				\item An initial committed \emph{startingTask} state which is in charge of initializing the additional data structures of the model, such as the list of available pods. As for the \emph{Queue} initial state, this state must be committed for the same reasons.
