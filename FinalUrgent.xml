@@ -231,9 +231,6 @@ void deliveryToPod() {
 void podToEntry() {
     
     moveRight = -checkPositions(3)*(botPosition[1] &gt; entryPoint[1] &amp;&amp; entryPoint[1] != 0) - checkPositions(3)*(((botPosition[1] &gt; 1) || (botPosition[1] == 1 &amp;&amp; botPosition[0] == entryPoint[0])) &amp;&amp; entryPoint[1] == 0) + checkPositions(1)*(botPosition[1] &lt; entryPoint[1]);
-   /*moveRight = -checkPositions(3)*(botPosition[1] &gt; entryPoint[1]) + checkPositions(1)*(botPosition[1] &lt; entryPoint[1]);
-    
-*/
     moveDown = checkPositions(2)*(botPosition[1] == entryPoint[1]);
     if (moveDown == 0 &amp;&amp; moveRight == 0 &amp;&amp; botPosition[1] == entryPoint[1]) {
         waiting ++;
@@ -327,7 +324,7 @@ timer = 0</label>
 			<label kind="synchronisation" x="1513" y="-493">claim[ID]!</label>
 			<label kind="assignment" x="1513" y="-476">setPodPosition(),
 timer = 0</label>
-			<label kind="comments" x="1385" y="-595">When the transition is fired, the bot send a
+			<label kind="comments" x="1385" y="-595">When the transition is fired, the bot sends a
 claim message to Queue asking for the pod position.
 The guard to enable the transition is that there must
 be at least one available task</label>
@@ -580,18 +577,14 @@ delayHuman = f()</label>
 task = TASK(70.0, 15.0); // Model of the task generator. First value is muT, second value is sigmaT
 human  = HUMAN(100.0, 20.0); // // Model of the human. First value is muH, second value is sigmaH
 system queue, task, human, BOT;
-progress {prog;}</system>
+progress {prog;} //Used in non-SMC verification to speed up the progress. Here, its utility is limited, but we decided not to delete it</system>
 	<queries>
 		<query>
 			<formula>Pr[&lt;=6000](&lt;&gt;(queue.discarded &gt; 0))</formula>
 			<comment></comment>
 		</query>
 		<query>
-			<formula>Pr[&lt;=1000](&lt;&gt;forall(x:int[0,7])(BOT(x).moveRight &gt; 1 || BOT(x).moveRight &lt; -1 || BOT(x).moveDown &gt; 1 || BOT(x).moveDown &lt; -1))</formula>
-			<comment></comment>
-		</query>
-		<query>
-			<formula>simulate[&lt;= 40000;1]{task.delayTask, human.delayHuman, queue.discarded,BOT(0).idle, nTask}</formula>
+			<formula>simulate[&lt;= 5000;1]{task.delayTask, human.delayHuman, queue.discarded, nTask}</formula>
 			<comment></comment>
 		</query>
 	</queries>
